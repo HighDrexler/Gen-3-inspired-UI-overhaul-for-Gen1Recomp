@@ -1,0 +1,30 @@
+{
+  "id": "gen3_battle_ui",
+  "name": "Gen 3 Inspired UI Overhaul",
+  "version": "1.4.1",
+  "author": "HighDrexler",
+  "description": "Stable cleanup release of the Gen 3-inspired UI overhaul. Preserves the final v1.4.13-test feature set while establishing a behavior-preserving maintenance baseline for future improvements.",
+  "profile": "overhaul",
+  "entry": "main.lua",
+  "github": "HighDrexler/Gen-3-inspired-UI-overhaul-for-Gen1Recomp",
+  "category": "UI",
+  "priority": 100,
+  "dependencies": [],
+  "optional_dependencies": [
+    "BATTLE_ART_VOXEL_FORK",
+    "DRAMALESS_SHAPE",
+    "DRAMATIC_SHAPE"
+  ],
+  "conflicts": [],
+  "incompatible": [],
+  "experimental": false,
+  "affects_link": false,
+  "permissions": [
+    "engine_internals"
+  ],
+  "api": 2,
+  "games": [
+    "gen1",
+    "gen2"
+  ]
+}
