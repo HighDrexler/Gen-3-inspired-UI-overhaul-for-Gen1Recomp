@@ -1760,10 +1760,10 @@ local function hudScale()
 
   local scale
   if raw <= 4.5 then
-    -- Lower the HUD min scale to 1.75 so the plates fit on their own side at
+    -- Lower the HUD min scale to 1.78 so the plates fit on their own side at
     -- small windows without overlapping the DV reader or the screen edge.
     -- Middle-crossing clamps keep enemy left / player right.
-    scale=clamp(raw,1.75,3.85)
+    scale=clamp(raw,1.78,3.85)
   else
     scale=clamp(3.85 + (raw-4.5)*0.72,3.85,7.0)
   end
