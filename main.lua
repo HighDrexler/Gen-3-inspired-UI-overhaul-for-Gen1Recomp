@@ -1845,21 +1845,17 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   -- Exact player-plate-relative geometry.
   local left = plateX + 7*s
   local right = plateX + plateW - 6*s
-  -- EXP sits on the same row and horizontal start as the player's HP readout
-  -- (156/156, which begins at x+55*s), so the bar lines up under that text
-  -- and the whitespace on the left is removed.
-  local labelW = 12*s
+  local labelW = 22*s
   local barH = 4.6*s
-  local rowY = plateY + 21.8*s
+  local rowY = plateY + plateH - 9*s
 
   -- EXP label: warm Gen III yellow.
-  pcall(printText, "EXP", plateX + 55*s, rowY - 0.9*s,
+  pcall(printText, "EXP", left, rowY - 0.9*s,
         3.9*s, {0.86,0.64,0.08,1})
 
-  -- Rail begins after the label and is 140% of its previous (half) span
-  -- (=70% of full width), so it fits beside any 3-digit HP readout.
-  local barX = plateX + 55*s + 12*s
-  local barW = math.max(8*s, (right - barX) * 0.70)
+  -- Rail begins after label and stretches to the right plate inset.
+  local barX = left + labelW
+  local barW = math.max(8*s, right - barX)
 
   -- Outer dark teal capsule.
   g.setColor(0.10,0.20,0.23,1)
