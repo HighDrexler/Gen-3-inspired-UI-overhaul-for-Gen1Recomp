@@ -1846,11 +1846,8 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   local left = plateX + 7*s
   local right = plateX + plateW - 6*s
   local barH = 4.6*s
-  local rowY = plateY + plateH - 9*s
-
-  -- EXP label aligned with the HP bar's start / HP text (player plateX+8*s).
-  pcall(printText, "EXP", plateX + 8*s, rowY - 0.9*s,
-        3.9*s, {0.86,0.64,0.08,1})
+  -- Lift the whole EXP row 3px higher so it sits neatly under the HP row.
+  local rowY = plateY + plateH - 9*s - 3/s
 
   -- Rail starts at the HP bar's start and is 140% of its previous (half)
   -- span (=70% of full width), fitting beside any 3-digit HP readout.
@@ -1886,6 +1883,11 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
                 math.max(1, ih*0.30),
                 0.4*s)
   end
+
+  -- EXP label drawn AFTER the bar so the blue fill never covers it. Aligned
+  -- to the HP bar's start / HP text, lifted 3px above the bar.
+  pcall(printText, "EXP", plateX + 8*s, rowY - 0.9*s,
+        3.9*s, {0.86,0.64,0.08,1})
 
   g.setColor(1,1,1,1)
 end
@@ -2028,7 +2030,7 @@ local function drawPlayerHUD(battle, s, commandRect)
   local margin=7*s
   local iosTop=featureEnabled("iosTopBattleHUD")
   local x=sw-w-margin
-  local y=iosTop and margin or (commandRect.y-h-6*s)
+  local y=iosTop and margin or (commandRect.y-h-6*s+3*s)
   -- Keep the plate in the right half (never cross the middle) and never let
   -- it run off the right screen edge at small windows.
   if x < sw/2 then x = sw/2 end
