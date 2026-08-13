@@ -1760,10 +1760,10 @@ local function hudScale()
 
   local scale
   if raw <= 4.5 then
-    -- Lower the HUD min scale to 1.77 so the plates fit on their own side at
+    -- Lower the HUD min scale to 1.75 so the plates fit on their own side at
     -- small windows without overlapping the DV reader or the screen edge.
     -- Middle-crossing clamps keep enemy left / player right.
-    scale=clamp(raw,1.77,3.85)
+    scale=clamp(raw,1.75,3.85)
   else
     scale=clamp(3.85 + (raw-4.5)*0.72,3.85,7.0)
   end
@@ -2011,11 +2011,15 @@ local function drawEnemyHUD(battle, s)
 
   drawStyledHP(x+7*s,y+14.5*s,97*s,7*s,b)
 
-  -- Numeric HP readout inside the box, right-aligned to the END of the HP bar
-  -- (x+7*s + 97*s = x+104*s) so it sits clear of the right edge of the plate.
+  -- Numeric HP readout (no plate border). Right-aligned to the end of the HP
+  -- bar (x+7*s + 97*s = x+104*s) and lifted ~5px so it sits neatly under the
+  -- bar without the framed box.
+  -- Numeric HP readout inside the box, mirrored to the player's 156/156
+  -- position (right-aligned on the status row).
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText, x+104*s, y+21.8*s, 4.4*s, textColor, "right", 53*s)
+    printText(hpText, x+104*s, y+20.0*s, 4.4*s, textColor, "right", 50*s)
+    printText(hpText,x+55*s,y+21.8*s,4.4*s,textColor,"right",53*s)
   end)
   local status=statusText(battle,b)
   if status then
