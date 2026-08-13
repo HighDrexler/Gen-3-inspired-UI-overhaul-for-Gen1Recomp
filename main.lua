@@ -1845,17 +1845,17 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   -- Exact player-plate-relative geometry.
   local left = plateX + 7*s
   local right = plateX + plateW - 6*s
-  local labelW = 22*s
   local barH = 4.6*s
   local rowY = plateY + plateH - 9*s
 
-  -- EXP label: warm Gen III yellow.
-  pcall(printText, "EXP", left, rowY - 0.9*s,
+  -- EXP label aligned with the HP bar's start / HP text (player plateX+8*s).
+  pcall(printText, "EXP", plateX + 8*s, rowY - 0.9*s,
         3.9*s, {0.86,0.64,0.08,1})
 
-  -- Rail begins after label and stretches to the right plate inset.
-  local barX = left + labelW
-  local barW = math.max(8*s, right - barX)
+  -- Rail starts at the HP bar's start and is 140% of its previous (half)
+  -- span (=70% of full width), fitting beside any 3-digit HP readout.
+  local barX = plateX + 8*s
+  local barW = math.max(8*s, (right - barX) * 0.70)
 
   -- Outer dark teal capsule.
   g.setColor(0.10,0.20,0.23,1)
@@ -2007,11 +2007,11 @@ local function drawEnemyHUD(battle, s)
 
   drawStyledHP(x+7*s,y+14.5*s,97*s,7*s,b)
 
-  -- Numeric HP readout inside the box, mirrored to the player's 156/156
-  -- position (right-aligned on the status row).
+  -- Numeric HP readout inside the box, left-aligned to the HP bar start so it
+  -- sits clear of the right edge of the plate.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+55*s,y+21.8*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+8*s,y+21.8*s,4.4*s,textColor,"left",53*s)
   end)
   local status=statusText(battle,b)
   if status then
@@ -2133,7 +2133,7 @@ local function commandGeometry()
   local margin = clamp((mobile and (portrait and 18 or 20) or 24)*u,
     mobile and 12 or 14, mobile and 34 or 56)
 
-  local x = math.max(8, sw-w-margin)
+  local x = math.max(8, sw-w-margin + 2)
   local y = math.max(8, sh-h-margin)
   return { x=x, y=y, w=w, h=h, u=u }
 end
@@ -2349,7 +2349,7 @@ function GoldCompat.moveGeometry()
 
   -- Keep the menu fully on-screen at any window size: it scales down with the
   -- viewport instead of overflowing off the left/bottom edge.
-  local x = math.max(8, sw - w - margin)
+  local x = math.max(8, sw - w - margin + 2)
   local y = math.max(8, sh - h - margin)
   return {
     x = x,
