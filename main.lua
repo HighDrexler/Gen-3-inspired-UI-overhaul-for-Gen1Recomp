@@ -1885,11 +1885,6 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
                 0.4*s)
   end
 
-  -- EXP label drawn AFTER the bar so the blue fill never covers it. Aligned
-  -- to the HP bar's start / HP text, lifted 7px higher than its prior spot.
-  pcall(printText, "EXP", plateX + 8*s, rowY - 0.9*s - 7/s,
-        3.9*s, {0.86,0.64,0.08,1})
-
   g.setColor(1,1,1,1)
 end
 
@@ -2014,7 +2009,7 @@ local function drawEnemyHUD(battle, s)
   -- sits clear of the right edge of the plate.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+8*s,y+21.8*s,4.4*s,textColor,"left",53*s)
+    printText(hpText,x+8*s,y+21.8*s+2/s,4.4*s,textColor,"left",53*s)
   end)
   local status=statusText(battle,b)
   if status then
@@ -2090,7 +2085,7 @@ local function drawPlayerHUD(battle, s, commandRect)
   -- Numeric HP is also isolated.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+55*s,y+21.8*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+55*s,y+21.8*s+2/s,4.4*s,textColor,"right",53*s)
   end)
 end
 
