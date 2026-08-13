@@ -1846,10 +1846,11 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   local left = plateX + 7*s
   local right = plateX + plateW - 6*s
   local barH = 4.6*s
-  -- EXP row in pure logical units (no fixed pixels) so it stays aligned with
-  -- the HP readout at every resolution. Sits 6*s above the box bottom, clear
-  -- of both the HP bar/readout above and the box edge below.
-  local rowY = plateY + plateH - 10*s
+  -- EXP row in pure logical units (no fixed pixels). It stays aligned with the
+  -- HP bar's left start, but sits BELOW the status badge (which occupies
+  -- y+22.2*s..29.2*s at x+8*s) so PSN/PAR/SLP/FRZ/BRN text has free space
+  -- under "HP". Bar bottom hugs the plate bottom.
+  local rowY = plateY + plateH - 5*s
 
   -- Rail starts at the HP bar's start and is 140% of its previous (half)
   -- span (=70% of full width), fitting beside any 3-digit HP readout.
@@ -2006,11 +2007,12 @@ local function drawEnemyHUD(battle, s)
 
   drawStyledHP(x+7*s,y+14.5*s,97*s,7*s,b)
 
-  -- Numeric HP readout inside the box, left-aligned to the HP bar start so it
-  -- sits clear of the right edge of the plate.
+  -- Numeric HP readout inside the box, right-aligned to the END of the HP bar
+  -- (x+7*s + 97*s = x+104*s) so the left-under-HP zone is free for the status
+  -- text (PSN/PAR/etc.) drawn at x+8*s.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+8*s,y+21.8*s+1*s,4.4*s,textColor,"left",53*s)
+    printText(hpText,x+104*s,y+21.8*s+1*s,4.4*s,textColor,"right",53*s)
   end)
   local status=statusText(battle,b)
   if status then
