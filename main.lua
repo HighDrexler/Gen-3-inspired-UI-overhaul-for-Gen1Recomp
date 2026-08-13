@@ -1846,8 +1846,9 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   local left = plateX + 7*s
   local right = plateX + plateW - 6*s
   local barH = 4.6*s
-  -- Lift the whole EXP row 3px higher so it sits neatly under the HP row.
-  local rowY = plateY + plateH - 9*s - 3/s
+  -- Lift the whole EXP row 8px higher (3px from before + 5px now) so it sits
+  -- neatly under the HP row.
+  local rowY = plateY + plateH - 9*s - 8/s
 
   -- Rail starts at the HP bar's start and is 140% of its previous (half)
   -- span (=70% of full width), fitting beside any 3-digit HP readout.
@@ -1885,8 +1886,8 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   end
 
   -- EXP label drawn AFTER the bar so the blue fill never covers it. Aligned
-  -- to the HP bar's start / HP text, lifted 3px above the bar.
-  pcall(printText, "EXP", plateX + 8*s, rowY - 0.9*s,
+  -- to the HP bar's start / HP text, lifted 7px higher than its prior spot.
+  pcall(printText, "EXP", plateX + 8*s, rowY - 0.9*s - 7/s,
         3.9*s, {0.86,0.64,0.08,1})
 
   g.setColor(1,1,1,1)
