@@ -2031,7 +2031,7 @@ local function drawPlayerHUD(battle, s, commandRect)
   local margin=7*s
   local iosTop=featureEnabled("iosTopBattleHUD")
   local x=sw-w-margin
-  local y=iosTop and margin or (commandRect.y-h-6*s+3*s)
+  local y=iosTop and margin or (commandRect.y-h-6*s+2*s)
   -- Keep the plate in the right half (never cross the middle) and never let
   -- it run off the right screen edge at small windows.
   if x < sw/2 then x = sw/2 end
