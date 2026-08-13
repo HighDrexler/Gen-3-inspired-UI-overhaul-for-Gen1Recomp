@@ -2009,7 +2009,7 @@ local function drawEnemyHUD(battle, s)
   -- sits clear of the right edge of the plate.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+8*s,y+21.8*s+2/s,4.4*s,textColor,"left",53*s)
+    printText(hpText,x+8*s,y+21.8*s+4/s,4.4*s,textColor,"left",53*s)
   end)
   local status=statusText(battle,b)
   if status then
@@ -2085,7 +2085,7 @@ local function drawPlayerHUD(battle, s, commandRect)
   -- Numeric HP is also isolated.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+55*s,y+21.8*s+2/s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+55*s,y+21.8*s+4/s,4.4*s,textColor,"right",53*s)
   end)
 end
 
