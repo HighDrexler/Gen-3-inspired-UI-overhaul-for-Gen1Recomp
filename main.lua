@@ -1849,7 +1849,7 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   -- EXP row in pure logical units (no fixed pixels) so it stays aligned with
   -- the HP readout at every resolution. Sits 6*s above the box bottom, clear
   -- of both the HP bar/readout above and the box edge below.
-  local rowY = plateY + plateH - 9*s
+  local rowY = plateY + plateH - 12*s
 
   -- Rail starts at the HP bar's start and is 140% of its previous (half)
   -- span (=70% of full width), fitting beside any 3-digit HP readout.
