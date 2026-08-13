@@ -1198,12 +1198,8 @@ local function shouldDrawStatusHUD(game, battle)
   -- owns the foreground, no battle status chrome should leak over it.
   if not battleOwnsForeground(game, battle) then return false end
 
-  -- Move selection is a full battle-owned menu rather than a battlefield
-  -- prompt. Its larger panel intentionally gets the full lower-right region.
-  if battle.phase == "moveSelect" or battle.phase == "mimicSelect" then
-    return false
-  end
-
+  -- Keep the status HUD visible during move selection too, so the plates and
+  -- the move menu all fit on one screen at minimum window size.
   return true
 end
 
@@ -1764,7 +1760,10 @@ local function hudScale()
 
   local scale
   if raw <= 4.5 then
-    scale=clamp(raw,2.85,3.85)
+    -- Lower the HUD min scale to 1.78 so the plates fit on their own side at
+    -- small windows without overlapping the DV reader or the screen edge.
+    -- Middle-crossing clamps keep enemy left / player right.
+    scale=clamp(raw,1.78,3.85)
   else
     scale=clamp(3.85 + (raw-4.5)*0.72,3.85,7.0)
   end
@@ -1774,14 +1773,6 @@ end
 local function drawPlate(x, y, w, h, s)
   local g = love.graphics
   local radius = 7*s
-
-  -- Deep teal cast shadow.
-  g.setColor(0.11,0.22,0.21,0.78)
-  roundedRect("fill", x+4*s, y+5*s, w, h, radius)
-
-  -- Globally selected border color.
-  setCurrentBorderColor(1)
-  roundedRect("fill", x-1.2*s, y-1.2*s, w+2.4*s, h+2.4*s, radius+1*s)
 
   -- Dark green-gray frame.
   g.setColor(0.24,0.31,0.28,1)
@@ -1795,7 +1786,8 @@ local function drawPlate(x, y, w, h, s)
   g.setColor(1.0,0.99,0.94,0.9)
   g.setLineWidth(math.max(1.2,0.7*s))
   roundedRect("line", x+4*s, y+4*s, w-8*s, h-8*s, radius-2*s)
-  drawUnifiedBorder(x,y,w,h,radius)
+  -- Themed outer border intentionally omitted so the plates align flush at
+  -- the screen margins without the colored ring; no drop shadow either.
 end
 
 local function drawStyledHP(x, y, w, h, battler)
@@ -1827,7 +1819,9 @@ local function drawStyledHP(x, y, w, h, battler)
 
   g.setColor(0.18,0.24,0.22,1)
   roundedRect("fill", bx,y,bw,h,h*0.38)
-  g.setColor(0.73,0.72,0.62,1)
+  -- Dark empty track so the green/yellow HP fill stays high-contrast and
+  -- easy to read at a glance.
+  g.setColor(0.26,0.28,0.26,1)
   roundedRect("fill", bx+2,y+2,bw-4,h-4,math.max(2,h*0.27))
 
   local innerW = math.max(0,bw-4)
@@ -1851,17 +1845,16 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   -- Exact player-plate-relative geometry.
   local left = plateX + 7*s
   local right = plateX + plateW - 6*s
-  local labelW = 22*s
   local barH = 4.6*s
-  local rowY = plateY + plateH - 9*s
+  -- EXP row in pure logical units (no fixed pixels) so it stays aligned with
+  -- the HP readout at every resolution. Sits 6*s above the box bottom, clear
+  -- of both the HP bar/readout above and the box edge below.
+  local rowY = plateY + plateH - 10*s
 
-  -- EXP label: warm Gen III yellow.
-  pcall(printText, "EXP", left, rowY - 0.9*s,
-        3.9*s, {0.86,0.64,0.08,1})
-
-  -- Rail begins after label and stretches to the right plate inset.
-  local barX = left + labelW
-  local barW = math.max(8*s, right - barX)
+  -- Rail starts at the HP bar's start and is 140% of its previous (half)
+  -- span (=70% of full width), fitting beside any 3-digit HP readout.
+  local barX = plateX + 8*s
+  local barW = math.max(8*s, (right - barX) * 0.70)
 
   -- Outer dark teal capsule.
   g.setColor(0.10,0.20,0.23,1)
@@ -1969,7 +1962,7 @@ local function drawEnemyHUD(battle, s)
   if not enemyVisible(battle) then return end
 
   local margin=7*s
-  local w,h=112*s,31*s
+  local w,h=112*s,35*s
   local sw=love.graphics.getWidth()
   local iosTop=featureEnabled("iosTopBattleHUD")
 
@@ -1977,8 +1970,13 @@ local function drawEnemyHUD(battle, s)
   -- the player's plate placement, but never bunches the two HUDs together.
   local x=margin
   local y=margin
+  -- Only pull the plate left if it would otherwise cross the screen middle
+  -- (tiny windows); at normal size it stays in the upper-left corner.
+  if x + w > sw/2 then x = math.max(8, sw/2 - w) end
   local b=battle.enemy
 
+  -- Card + backplate restored; drawPlate's outer border is already disabled
+  -- (borderless), so only the framed box shows without the orange ring.
   drawPlate(x,y,w,h,s)
 
   local textColor={0.11,0.12,0.11,1}
@@ -2008,6 +2006,12 @@ local function drawEnemyHUD(battle, s)
 
   drawStyledHP(x+7*s,y+14.5*s,97*s,7*s,b)
 
+  -- Numeric HP readout inside the box, left-aligned to the HP bar start so it
+  -- sits clear of the right edge of the plate.
+  pcall(function()
+    local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
+    printText(hpText,x+8*s,y+21.8*s+1*s,4.4*s,textColor,"left",53*s)
+  end)
   local status=statusText(battle,b)
   if status then
     local r,g,bb,aa=statusColor(status)
@@ -2019,11 +2023,15 @@ local function drawPlayerHUD(battle, s, commandRect)
   if not playerVisible(battle) then return end
 
   local sw=love.graphics.getWidth()
-  local w,h=116*s,45*s
+  local w,h=116*s,35*s
   local margin=7*s
   local iosTop=featureEnabled("iosTopBattleHUD")
   local x=sw-w-margin
-  local y=iosTop and margin or (commandRect.y-h-6*s)
+  local y=iosTop and margin or (commandRect.y-h-6*s+2*s)
+  -- Keep the plate in the right half (never cross the middle) and never let
+  -- it run off the right screen edge at small windows.
+  if x < sw/2 then x = sw/2 end
+  if x + w > sw - 8 then x = math.max(sw/2, sw - w - 8) end
   local b=battle.player
 
   -- Core geometry first. These are intentionally not dependent on font rendering.
@@ -2078,7 +2086,7 @@ local function drawPlayerHUD(battle, s, commandRect)
   -- Numeric HP is also isolated.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+55*s,y+21.8*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+55*s,y+21.8*s+1*s,4.4*s,textColor,"right",53*s)
   end)
 end
 
@@ -2096,7 +2104,7 @@ local function battleMenuScale()
 
   local scale
   if raw <= 1.5 then
-    scale=clamp(raw,0.68,1.18)
+    scale=clamp(raw,0.60,1.18)
   else
     scale=clamp(1.18 + (raw-1.5)*0.75,1.18,2.30)
   end
@@ -2124,7 +2132,9 @@ local function commandGeometry()
   local margin = clamp((mobile and (portrait and 18 or 20) or 24)*u,
     mobile and 12 or 14, mobile and 34 or 56)
 
-  return { x=sw-w-margin, y=sh-h-margin, w=w, h=h, u=u }
+  local x = math.max(8, sw-w-margin + 2)
+  local y = math.max(8, sh-h-margin)
+  return { x=x, y=y, w=w, h=h, u=u }
 end
 
 function GoldCompat.dialogueGeometry()
@@ -2262,13 +2272,11 @@ local function drawDialogue(battle)
       or battle.__gen3MetricCache.key~=metricKey then
     local size,glyphH,lineH,blockH,wrapped
 
-    if pageComplete then
-      size,glyphH,lineH,blockH,wrapped=GoldCompat.fittedCompletedDialogue(
-        metricSource,preferred,minimum,contentW,innerH)
-    else
-      size,glyphH,lineH,blockH=fittedDialogueMetrics(
-        metricSource,preferred,minimum,contentW,innerH)
-    end
+    -- Always size from the FINAL (wrapped) page so the typewriter never
+    -- animates the font: text is pinned at its finished size from the first
+    -- revealed glyph; only the revealed-character window changes.
+    size,glyphH,lineH,blockH,wrapped=GoldCompat.fittedCompletedDialogue(
+      metricSource,preferred,minimum,contentW,innerH)
 
     battle.__gen3MetricCache={
       key=metricKey,size=size,glyphH=glyphH,lineH=lineH,blockH=blockH,
@@ -2331,16 +2339,20 @@ function GoldCompat.moveGeometry()
 
   local mobile=featureEnabled("mobileBattleUI")
   local portrait=sh>sw
-  local w = clamp((mobile and (portrait and 570 or 630) or 720)*u,
-    mobile and 370 or 470, mobile and 1080 or 1660)
+  local w = clamp((mobile and (portrait and 570 or 630) or 756)*u,
+    mobile and 300 or 400, mobile and 1080 or 1660)
   local h = clamp((mobile and (portrait and 235 or 255) or 300)*u,
-    mobile and 160 or 205, mobile and 455 or 690)
+    mobile and 160 or 215, mobile and 455 or 690)
   local margin = clamp((mobile and (portrait and 18 or 20) or 24)*u,
     mobile and 12 or 14, mobile and 36 or 56)
 
+  -- Keep the menu fully on-screen at any window size: it scales down with the
+  -- viewport instead of overflowing off the left/bottom edge.
+  local x = math.max(8, sw - w - margin + 2)
+  local y = math.max(8, sh - h - margin)
   return {
-    x = sw - w - margin,
-    y = sh - h - margin,
+    x = x,
+    y = y,
     w = w,
     h = h,
     u = u,
@@ -4141,8 +4153,13 @@ local function partyLogicalCanvas()
   local scale = math.floor(raw)
   if scale < 1 then scale = raw end
 
+  -- The menu backplate is transparent now, so it no longer clashes with the
+  -- top-right DV reader; anchor it flush to the top of the screen (no top
+  -- margin) and center it horizontally.
+  local m = 6
   local ox = math.floor((sw - 160*scale) * 0.5 + 0.5)
-  local oy = math.floor((sh - 144*scale) * 0.5 + 0.5)
+  local oy = m
+  if oy < m then oy = m end
   return ox, oy, scale
 end
 
@@ -4786,14 +4803,11 @@ local function drawPartyFinal(game, state)
   g.translate(ox,oy)
   g.scale(sc,sc)
 
-  g.setColor(0.94,0.93,0.87,1)
-  g.rectangle("fill",0,0,160,144)
+  -- No full-canvas backplate: keep the menu transparent so overlays such as
+  -- the DV reader show through. Only the individual Pokémon cards paint a
+  -- beige panel (see partySlotPanel below).
 
-  -- Header
-  g.setColor(0.08,0.08,0.08,1)
-  g.rectangle("fill",4,4,152,16)
-  g.setColor(0.99,0.985,0.955,1)
-  g.rectangle("fill",5,5,150,14)
+  -- Header title only (no black/cream frame box around it).
   partyText(Strings("POKéMON"),10,6,6,{0.06,0.06,0.06,1})
 
   if #party == 0 then
@@ -8191,10 +8205,12 @@ function GoldCompat.drawGoldPack(pack,winW,winH,embedded)
 
   -- Hanging field PACK: never paint the whole screen.  The live overworld
   -- remains visible beneath this panel because PackMenu is patched non-opaque.
-  local x=embedded and 5 or 78
-  local y=embedded and 24 or 18
-  local w=embedded and 150 or 78
-  local h=embedded and 112 or 116
+  -- Enlarged so the panel uses most of the viewport width while keeping a top
+  -- strip clear for overlays such as the DV reader.
+  local x=embedded and 5 or 8
+  local y=embedded and 24 or 16
+  local w=embedded and 150 or 144
+  local h=embedded and 112 or 120
 
   G.push("all")
   G.translate(ox,oy)
@@ -8261,7 +8277,7 @@ function GoldCompat.drawGoldPack(pack,winW,winH,embedded)
 
   for i,label in ipairs(tabs) do
     local tx=x+4+(i-1)*tabW
-    GoldCompat.panelText(label,tx,y+7,2.15,
+    GoldCompat.panelText(label,tx,y+7,3.0,
       pocket.id==ids[i] and {0.98,0.97,0.92,1} or {0.22,0.22,0.20,1},
       "center",tabW-1)
   end
@@ -8281,17 +8297,17 @@ function GoldCompat.drawGoldPack(pack,winW,winH,embedded)
     local selected=idx==(pack.index or 1)
     if row then
       local label=tostring(row.name or row.id or "")
-      GoldCompat.panelText(label,x+9,yy+1,3.0,
+      GoldCompat.panelText(label,x+9,yy+1,4.5,
         selected and {1,1,1,1} or {0.06,0.06,0.06,1},"left",w-27)
       if row.showCount then
-        GoldCompat.panelText("×"..tostring(row.count or 1),x+w-20,yy+1,2.55,
+        GoldCompat.panelText("×"..tostring(row.count or 1),x+w-20,yy+1,3.5,
           selected and {1,1,1,1} or {0.28,0.28,0.25,1},"right",12)
       elseif row.teaches then
-        GoldCompat.panelText(row.teaches,x+w-31,yy+1,2.15,
+        GoldCompat.panelText(row.teaches,x+w-31,yy+1,3.0,
           selected and {0.90,0.90,0.86,1} or {0.34,0.34,0.31,1},"right",24)
       end
     elseif idx==#rows+1 then
-      GoldCompat.panelText("CANCEL",x+9,yy+1,3.0,
+      GoldCompat.panelText("CANCEL",x+9,yy+1,4.5,
         selected and {1,1,1,1} or {0.06,0.06,0.06,1})
     end
   end
@@ -8304,10 +8320,10 @@ function GoldCompat.drawGoldPack(pack,winW,winH,embedded)
     if ok then desc=v end
   end
   desc=tostring(desc or "Choose an item."):gsub("<NEXT>"," "):gsub("%s+"," ")
-  local f=font(2.55*UI_TEXT_SCALE)
+  local f=font(3.5*UI_TEXT_SCALE)
   local _,wrapped=f:getWrap(desc,w-18)
   for i=1,math.min(2,#wrapped) do
-    GoldCompat.panelText(wrapped[i],x+10,y+h-24+(i-1)*7,2.55,
+    GoldCompat.panelText(wrapped[i],x+10,y+h-24+(i-1)*7,3.5,
       {0.07,0.07,0.07,1},"left",w-20)
   end
 
@@ -8852,7 +8868,7 @@ function GoldCompat.drawGoldBoxMenu(box)
     end
     G.pop()
     for i,label in ipairs(labels) do
-      GoldCompat.panelText(label,117,91+(i-1)*10,2.7,
+      GoldCompat.panelText(label,117,90+(i-1)*10,2.7,
         i==ix and {1,1,1,1} or {0.06,0.06,0.06,1})
     end
   end
