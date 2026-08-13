@@ -2007,14 +2007,10 @@ local function drawEnemyHUD(battle, s)
 
   drawStyledHP(x+7*s,y+14.5*s,97*s,7*s,b)
 
-  -- Numeric HP readout (no plate border). Right-aligned to the end of the HP
-  -- bar (x+7*s + 97*s = x+104*s) and lifted ~5px so it sits neatly under the
-  -- bar without the framed box.
   -- Numeric HP readout inside the box, mirrored to the player's 156/156
   -- position (right-aligned on the status row).
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText, x+104*s, y+20.0*s, 4.4*s, textColor, "right", 50*s)
     printText(hpText,x+55*s,y+21.8*s,4.4*s,textColor,"right",53*s)
   end)
   local status=statusText(battle,b)
