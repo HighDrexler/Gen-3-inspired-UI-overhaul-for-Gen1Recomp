@@ -602,8 +602,8 @@ local OPTION_DEFAULTS = {
   hideNativeBattleUI = false,
   mobileBattleUI = false,
   iosTopBattleHUD = false,
-  uiTextSize = "normal",
-  uiTextWeight = "normal",
+  uiTextSize = "large",
+  uiTextWeight = "thin",
   uiBoxScale = "normal",
   uiBorderColor = "gold",
   uiBorderStyle = "classic",
@@ -1007,7 +1007,7 @@ local function installVerifiedOptions(mod)
       key = "uiTextSize",
       type = "choice",
       label = "TEXT SIZE",
-      default = "normal",
+      default = "large",
       choices = {
         {"SMALL","small"},
         {"NORMAL","normal"},
@@ -1019,7 +1019,7 @@ local function installVerifiedOptions(mod)
       key = "uiTextWeight",
       type = "choice",
       label = "TEXT THICKNESS",
-      default = "normal",
+      default = "thin",
       choices = {
         {"THIN","thin"},
         {"NORMAL","normal"},
@@ -4872,7 +4872,7 @@ local function drawPartyFinal(game, state)
 
     -- Live Party EXP, matching the battle HUD's blue language.
     partyText("EXP",lx+9,ly+58,3,{0.34,0.45,0.50,1})
-    GoldCompat.drawPartyExpBar(game,mon,lx+20,ly+59,lw-29)
+    GoldCompat.drawPartyExpBar(game,mon,lx+19,ly+59,lw-29)
 
     local integratedLearn = State.activeMoveLearn
     local battleIntegrated =
