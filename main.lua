@@ -4170,11 +4170,11 @@ local function partySlotPanel(x,y,w,h,selected)
   g.setColor(selected and {0.975,0.955,0.88,1} or {0.99,0.985,0.955,1})
   roundedRect("fill",x,y,w,h,3)
   if selected then
-    -- Absorb the native 1px black selection outline drawn just outside the
-    -- card: paint the cream face 1px larger first, so only our orange
-    -- rounded-rect selection marker remains visible.
+    -- Absorb the native black selection outline (drawn just outside the card,
+    -- and visibly on the thin 16px list rows) by painting the cream face 2px
+    -- larger first. Then our brown rounded-rect is the only visible marker.
     g.setColor(0.975,0.955,0.88,1)
-    roundedRect("fill",x-1,y-1,w+2,h+2,3)
+    roundedRect("fill",x-2,y-2,w+4,h+4,3)
     g.setColor(0.72,0.58,0.28,1)
     roundedRect("line",x+3,y+3,w-6,h-6,2)
   end
@@ -8635,7 +8635,10 @@ function GoldCompat.drawGoldPcRoot(pc)
     return
   end
   G.push("all"); G.translate(ox,oy); G.scale(sc,sc)
-  G.setColor(0.94,0.93,0.87,1); G.rectangle("fill",0,0,160,144)
+  -- White backplate: covers the whole UI canvas (from the "POKéMON" header
+  -- to the bottom-right pixel) so native artifacts behind the party UI are
+  -- hidden. Drawn first, behind every panel.
+  G.setColor(1,1,1,1); G.rectangle("fill",0,0,160,144)
   G.setColor(0.08,0.08,0.08,1); G.rectangle("fill",4,4,152,16)
   G.setColor(0.99,0.985,0.955,1); G.rectangle("fill",5,5,150,14)
 
