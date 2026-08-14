@@ -8874,7 +8874,7 @@ function GoldCompat.drawGoldBoxMenu(box)
     end
     G.pop()
     for i,label in ipairs(labels) do
-      GoldCompat.panelText(label,117,90+(i-1)*10,2.7,
+      GoldCompat.panelText(label,117,90+(i-1)*10-3*s,2.7,
         i==ix and {1,1,1,1} or {0.06,0.06,0.06,1})
     end
   end
