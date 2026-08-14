@@ -4895,7 +4895,7 @@ local function drawPartyFinal(game, state)
     local hpBarW = math.max(18, hpValueX - hpBarX - 3)
 
     partyText("HP",hpLabelX,hpY,4,{0.08,0.08,0.08,1})
-    partyHPBarFinal(hpBarX,hpY+1,hpBarW,mon)
+    partyHPBarFinal(hpBarX,hpY,hpBarW,mon)
     partyText(hp,hpValueX,hpY,4,{0.08,0.08,0.08,1})
 
     local st = owStatus(mon)
@@ -4974,7 +4974,7 @@ local function drawPartyFinal(game, state)
 
     else
       partyText("HP",rx+19,y+8,3,{0.10,0.10,0.09,1})
-      partyHPBarFinal(rx+31,y+10,rw-35,m)
+      partyHPBarFinal(rx+31,y+8,rw-35,m)
     end
   end
 
