@@ -4190,16 +4190,11 @@ end
 
 local function partySlotPanel(x,y,w,h,selected)
   local g = love.graphics
-  -- Borderless card: drop the dark outer fill so the panel is transparent
-  -- except for its cream face (keeps overlays such as the DV reader visible).
-  g.setColor(selected and {0.975,0.955,0.88,1} or {0.99,0.985,0.955,1})
+  g.setColor(0.14,0.14,0.13,1)
   roundedRect("fill",x,y,w,h,3)
+  g.setColor(selected and {0.975,0.955,0.88,1} or {0.99,0.985,0.955,1})
+  roundedRect("fill",x+2,y+2,w-4,h-4,2)
   if selected then
-    -- Absorb the native 1px black selection outline drawn just outside the
-    -- card: paint the cream face 1px larger first, so only our orange
-    -- rounded-rect selection marker remains visible.
-    g.setColor(0.975,0.955,0.88,1)
-    roundedRect("fill",x-1,y-1,w+2,h+2,3)
     g.setColor(0.72,0.58,0.28,1)
     roundedRect("line",x+3,y+3,w-6,h-6,2)
   end
@@ -8898,7 +8893,7 @@ function GoldCompat.drawGoldBoxMenu(box)
     end
     G.pop()
     for i,label in ipairs(labels) do
-      GoldCompat.panelText(label,117,90+(i-1)*10-3*s,2.7,
+      GoldCompat.panelText(label,117,90+(i-1)*10,2.7,
         i==ix and {1,1,1,1} or {0.06,0.06,0.06,1})
     end
   end
