@@ -2012,7 +2012,7 @@ local function drawEnemyHUD(battle, s)
   -- text (PSN/PAR/etc.) drawn at x+8*s.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+104*s,y+21.8*s+1*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+51*s,y+21.8*s+1*s,4.4*s,textColor,"right",53*s)
   end)
   local status=statusText(battle,b)
   if status then
