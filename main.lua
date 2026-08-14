@@ -1852,9 +1852,9 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   -- under "HP". Lifted per request (total 10*s above plate bottom).
   local rowY = plateY + plateH - 10*s
 
-  -- Rail starts at the HP bar's left (shifted 6*s right per request) and is
+  -- Rail starts at the HP bar's left (shifted 23*s right per request) and is
   -- 60% of the available width.
-  local barX = plateX + 19*s
+  local barX = plateX + 23*s
   local barW = math.max(8*s, (right - barX) * 0.60)
 
   -- Outer dark teal capsule.
