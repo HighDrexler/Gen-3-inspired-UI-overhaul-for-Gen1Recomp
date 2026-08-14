@@ -4835,17 +4835,11 @@ local function drawPartyFinal(game, state)
   g.translate(ox,oy)
   g.scale(sc,sc)
 
-  -- Cover the underlying battle overlay only through the Party content band.
-  -- Crystal's shiny-reveal sparkles are drawn by battle.overlay before this
-  -- HUD pass and otherwise leak through the transparent gaps between cards.
-  -- Starting below the header preserves POKéMON and the top-right DV reader;
-  -- stopping at row 127 preserves the black switch prompt at the bottom.
+  -- Party owns the complete logical viewport inside the aspect-ratio bars.
+  -- This hides battle-only overlays (DV readout and shiny sparkles) while the
+  -- title, cards, and prompt are redrawn cleanly on top below.
   g.setColor(1,1,1,1)
-  g.rectangle("fill",0,16,160,111)
-  -- The sparkle is centered at logical x=86 and can extend above this canvas.
-  -- Mask only its footprint so screen-anchored overlays (notably the DV
-  -- reader) remain untouched at every resolution.
-  g.rectangle("fill",82,-8,9,24)
+  g.rectangle("fill",0,0,160,144)
 
   -- Header title only (no black/cream frame box around it).
   partyText(Strings("POKéMON"),10,6,6,{0.06,0.06,0.06,1})
@@ -4899,7 +4893,7 @@ local function drawPartyFinal(game, state)
     local hpBarW = math.max(18, hpValueX - hpBarX - 3)
 
     partyText("HP",hpLabelX,hpY,4,{0.08,0.08,0.08,1})
-    partyHPBarFinal(hpBarX,hpY+3,hpBarW,mon)
+    partyHPBarFinal(hpBarX,hpY+2,hpBarW,mon)
     partyText(hp,hpValueX,hpY,4,{0.08,0.08,0.08,1})
 
     local st = owStatus(mon)
