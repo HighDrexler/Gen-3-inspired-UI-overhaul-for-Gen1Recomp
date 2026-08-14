@@ -4831,6 +4831,17 @@ local function drawPartyFinal(game, state)
   -- battle-quality typography directly in final screen pixels.
   partyRenderOX, partyRenderOY, partyRenderScale = ox, oy, sc
 
+  -- Party is intentionally opaque across the physical window, not merely the
+  -- scaled 160x144 game canvas. This clears aspect-ratio bars plus any
+  -- screen-anchored battle overlays at portrait, ultrawide, and intermediate
+  -- resolutions before rebuilding the menu in logical coordinates.
+  g.push("all")
+  g.origin()
+  g.setColor(1,1,1,1)
+  local screenW,screenH=g.getDimensions()
+  g.rectangle("fill",0,0,screenW,screenH)
+  g.pop()
+
   g.push("all")
   g.translate(ox,oy)
   g.scale(sc,sc)
