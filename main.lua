@@ -4842,6 +4842,9 @@ local function drawPartyFinal(game, state)
   -- stopping at row 127 preserves the black switch prompt at the bottom.
   g.setColor(1,1,1,1)
   g.rectangle("fill",0,16,160,111)
+  -- Mask the upper-center sparkle without covering the top-right DV reader.
+  -- The title is deliberately redrawn over this strip below.
+  g.rectangle("fill",0,0,105,16)
 
   -- Header title only (no black/cream frame box around it).
   partyText(Strings("POKéMON"),10,6,6,{0.06,0.06,0.06,1})
@@ -4895,19 +4898,21 @@ local function drawPartyFinal(game, state)
     local hpBarW = math.max(18, hpValueX - hpBarX - 3)
 
     partyText("HP",hpLabelX,hpY,4,{0.08,0.08,0.08,1})
-    partyHPBarFinal(hpBarX,hpY+2,hpBarW,mon)
+    partyHPBarFinal(hpBarX,hpY+4,hpBarW,mon)
     partyText(hp,hpValueX,hpY,4,{0.08,0.08,0.08,1})
 
     local st = owStatus(mon)
     if st then
       -- Share the HP/EXP label column and sit at the exact midpoint between
       -- their logical rows, clear of both the HP value and EXP rail.
-      partyText(st,lx+9,ly+50.5,4,
+      local statusY=ly+50.5
+      if tostring(st):upper():find("SLP",1,true) then statusY=statusY-1 end
+      partyText(st,lx+9,statusY,4,
         st=="FNT" and {0.52,0.10,0.08,1} or {0.40,0.15,0.44,1})
     end
 
     -- Live Party EXP, matching the battle HUD's blue language.
-    partyText("EXP",lx+9,ly+58,3,{0.34,0.45,0.50,1})
+    partyText("EXP",lx+10,ly+58,3,{0.34,0.45,0.50,1})
     GoldCompat.drawPartyExpBar(game,mon,lx+19,ly+59,lw-29)
 
     local integratedLearn = State.activeMoveLearn
@@ -4976,7 +4981,7 @@ local function drawPartyFinal(game, state)
 
     else
       partyText("HP",rx+19,y+8,3,{0.10,0.10,0.09,1})
-      partyHPBarFinal(rx+31,y+10,rw-35,m)
+      partyHPBarFinal(rx+31,y+9,rw-35,m)
     end
   end
 
