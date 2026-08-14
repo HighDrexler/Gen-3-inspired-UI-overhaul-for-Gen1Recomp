@@ -1854,7 +1854,7 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
 
   -- Rail starts at the HP bar's left (shifted 6*s right per request) and is
   -- 60% of the available width.
-  local barX = plateX + 14*s
+  local barX = plateX + 19*s
   local barW = math.max(8*s, (right - barX) * 0.60)
 
   -- Outer dark teal capsule.
@@ -2012,7 +2012,7 @@ local function drawEnemyHUD(battle, s)
   -- text (PSN/PAR/etc.) drawn at x+8*s.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+51*s,y+21.8*s+1*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+51*s,y+21.8*s+0*s,4.4*s,textColor,"right",53*s)
   end)
   local status=statusText(battle,b)
   if status then
@@ -2088,7 +2088,7 @@ local function drawPlayerHUD(battle, s, commandRect)
   -- Numeric HP is also isolated.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+55*s,y+21.8*s+1*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+55*s,y+21.8*s+0*s,4.4*s,textColor,"right",53*s)
   end)
 end
 
