@@ -2012,12 +2012,12 @@ local function drawEnemyHUD(battle, s)
   -- text (PSN/PAR/etc.) drawn at x+8*s.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+51*s,y+21.8*s-2*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+51*s,y+21.8*s+0*s,4.4*s,textColor,"right",53*s)
   end)
   local status=statusText(battle,b)
   if status then
     local r,g,bb,aa=statusColor(status)
-    printText(status,x+12*s,y+24.0*s,3.8*s,{r,g,bb,aa})
+    printText(status,x+10*s,y+23.0*s,3.8*s,{r,g,bb,aa})
   end
 end
 
@@ -2087,7 +2087,7 @@ local function drawPlayerHUD(battle, s, commandRect)
   -- Numeric HP is also isolated.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+55*s,y+21.8*s-2*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+55*s,y+21.8*s+0*s,4.4*s,textColor,"right",53*s)
   end)
 end
 
@@ -4171,6 +4171,11 @@ local function partySlotPanel(x,y,w,h,selected)
   g.setColor(selected and {0.975,0.955,0.88,1} or {0.99,0.985,0.955,1})
   roundedRect("fill",x,y,w,h,3)
   if selected then
+    -- Absorb the native 1px black selection outline drawn just outside the
+    -- card: paint the cream face 1px larger first, so only our orange
+    -- rounded-rect selection marker remains visible.
+    g.setColor(0.975,0.955,0.88,1)
+    roundedRect("fill",x-1,y-1,w+2,h+2,3)
     g.setColor(0.72,0.58,0.28,1)
     roundedRect("line",x+3,y+3,w-6,h-6,2)
   end
