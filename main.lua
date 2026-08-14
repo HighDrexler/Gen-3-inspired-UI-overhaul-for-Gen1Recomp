@@ -4895,12 +4895,14 @@ local function drawPartyFinal(game, state)
     local hpBarW = math.max(18, hpValueX - hpBarX - 3)
 
     partyText("HP",hpLabelX,hpY,4,{0.08,0.08,0.08,1})
-    partyHPBarFinal(hpBarX,hpY,hpBarW,mon)
+    partyHPBarFinal(hpBarX,hpY+2,hpBarW,mon)
     partyText(hp,hpValueX,hpY,4,{0.08,0.08,0.08,1})
 
     local st = owStatus(mon)
     if st then
-      partyText(st,lx+12,ly+54,4,
+      -- Share the HP/EXP label column and sit at the exact midpoint between
+      -- their logical rows, clear of both the HP value and EXP rail.
+      partyText(st,lx+9,ly+50.5,4,
         st=="FNT" and {0.52,0.10,0.08,1} or {0.40,0.15,0.44,1})
     end
 
@@ -4974,7 +4976,7 @@ local function drawPartyFinal(game, state)
 
     else
       partyText("HP",rx+19,y+8,3,{0.10,0.10,0.09,1})
-      partyHPBarFinal(rx+31,y+8,rw-35,m)
+      partyHPBarFinal(rx+31,y+10,rw-35,m)
     end
   end
 
