@@ -6842,8 +6842,9 @@ function GoldCompat.drawGoldPartyMenu(self,winW,winH)
   G.translate(ox,oy)
   G.scale(sc,sc)
 
-  -- Exact Gen 1 Party screen foundation.
-  G.setColor(0.94,0.93,0.87,1)
+  -- Exact Gen 1 Party screen foundation. White backplate so native artifacts
+  -- behind the party UI are hidden (from the "POKéMON" header to bottom-right).
+  G.setColor(1,1,1,1)
   G.rectangle("fill",0,0,160,144)
 
   G.setColor(0.08,0.08,0.08,1)
@@ -7068,7 +7069,10 @@ function GoldCompat.drawGoldPartyMenu(self,winW,winH)
     G.scale(sc,sc)
 
     if isSelected then
-      G.setColor(0.10,0.10,0.10,1)
+      -- Cream face (no black outline) + brown rounded-rect marker, matching the
+      -- left selected card. Keeps the selection readable without the heavy
+      -- black box.
+      G.setColor(0.99,0.985,0.955,1)
       roundedRect("fill",rx,yy,rw,slotH,3)
       G.setColor(0.985,0.975,0.92,1)
       roundedRect("fill",rx+2,yy+2,rw-4,slotH-4,2)
