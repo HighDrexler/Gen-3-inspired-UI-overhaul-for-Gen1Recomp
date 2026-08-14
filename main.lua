@@ -4171,13 +4171,8 @@ local function partySlotPanel(x,y,w,h,selected)
   g.setColor(selected and {0.975,0.955,0.88,1} or {0.99,0.985,0.955,1})
   roundedRect("fill",x,y,w,h,3)
   if selected then
-    -- Absorb the native 1px black selection outline drawn just outside the
-    -- card: paint the cream face 1px larger first, so only our orange
-    -- rounded-rect selection marker remains visible.
-    g.setColor(0.975,0.955,0.88,1)
-    roundedRect("fill",x-1,y-1,w+2,h+2,3)
-    g.setColor(0.72,0.58,0.28,1)
-    roundedRect("line",x+3,y+3,w-6,h-6,2)
+    -- Keep the native black selection outline visible; drop the brown/ochre
+    -- rounded-rect marker (black outline is the sole selection indicator).
   end
 end
 
