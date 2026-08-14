@@ -4826,9 +4826,13 @@ local function drawPartyFinal(game, state)
   g.translate(ox,oy)
   g.scale(sc,sc)
 
-  -- No full-canvas backplate: keep the menu transparent so overlays such as
-  -- the DV reader show through. Only the individual Pokémon cards paint a
-  -- beige panel (see partySlotPanel below).
+  -- Cover the underlying battle overlay only through the Party content band.
+  -- Crystal's shiny-reveal sparkles are drawn by battle.overlay before this
+  -- HUD pass and otherwise leak through the transparent gaps between cards.
+  -- Starting below the header preserves POKéMON and the top-right DV reader;
+  -- stopping at row 127 preserves the black switch prompt at the bottom.
+  g.setColor(1,1,1,1)
+  g.rectangle("fill",0,16,160,111)
 
   -- Header title only (no black/cream frame box around it).
   partyText(Strings("POKéMON"),10,6,6,{0.06,0.06,0.06,1})
@@ -4924,19 +4928,9 @@ local function drawPartyFinal(game, state)
     local isSelected = i == selected
     local d = game.data.pokemon[m.species]
 
-    -- Selected row gets dark highlight, others stay light.
-    if isSelected then
-      g.setColor(0.10,0.10,0.10,1)
-      roundedRect("fill",rx,y,rw,slotH,3)
-      g.setColor(0.985,0.975,0.92,1)
-      roundedRect("fill",rx+2,y+2,rw-4,slotH-4,2)
-      -- Party screen is intentionally theme-locked.
-      g.setColor(0.62,0.48,0.20,1)
-      roundedRect("line",rx+3,y+3,rw-6,slotH-6,2)
-      g.setColor(1,1,1,1)
-    else
-      partySlotPanel(rx,y,rw,slotH,false)
-    end
+    -- Every row uses the same borderless cream card. Selection is communicated
+    -- solely by partySlotPanel's brown rounded outline.
+    partySlotPanel(rx,y,rw,slotH,isSelected)
 
     PartyMenu.drawIcon(game,m,rx+2,y,false,state.blink or 0)
 

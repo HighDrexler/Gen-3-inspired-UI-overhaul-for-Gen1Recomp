@@ -9,6 +9,10 @@
 - Battle Art `MODDED` ownership now bypasses Battle Art portraits for ordinary
   and shiny Pokémon alike, allowing the live sprite-provider chain to choose
   the correct Party, Summary, PC, and Pokédex image.
+- Battle Party selection now masks underlying shiny-reveal sparkles only across
+  its middle content band, preserving the top title/DV overlay and bottom
+  switch prompt. All Pokémon cards use borderless cream faces with the brown
+  rounded outline as the sole selection marker.
 
 ## v1.4.1
 
