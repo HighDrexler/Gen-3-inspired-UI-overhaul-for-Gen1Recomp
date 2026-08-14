@@ -4188,8 +4188,17 @@ local function partyLogicalCanvas()
   return ox, oy, scale
 end
 
-local function partySlotPanel(x,y,w,h,selected)
+local function partySlotPanel(x,y,w,h,selected,thickSelected)
   local g = love.graphics
+  if selected and thickSelected then
+    -- The highlighted list row inherits the old black-frame footprint, but
+    -- brown now owns that entire border. Only the active row receives it.
+    g.setColor(0.72,0.58,0.28,1)
+    roundedRect("fill",x,y,w,h,3)
+    g.setColor(0.975,0.955,0.88,1)
+    roundedRect("fill",x+2,y+2,w-4,h-4,2)
+    return
+  end
   g.setColor(selected and {0.975,0.955,0.88,1} or {0.99,0.985,0.955,1})
   roundedRect("fill",x,y,w,h,3)
   if selected then
@@ -4928,9 +4937,9 @@ local function drawPartyFinal(game, state)
     local isSelected = i == selected
     local d = game.data.pokemon[m.species]
 
-    -- Every row uses the same borderless cream card. Selection is communicated
-    -- solely by partySlotPanel's brown rounded outline.
-    partySlotPanel(rx,y,rw,slotH,isSelected)
+    -- Ordinary rows remain borderless; the active row promotes the same brown
+    -- selection color into the old frame's full two-pixel footprint.
+    partySlotPanel(rx,y,rw,slotH,isSelected,true)
 
     PartyMenu.drawIcon(game,m,rx+2,y,false,state.blink or 0)
 
