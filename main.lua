@@ -378,6 +378,20 @@ local spritePortraitResolver = (function()
     local mode = settingValue(BA.setting)
     if mode == "rom" then return nil end
 
+    -- DUPLICATE FIX is a complete species-art ownership decision. MODDED
+    -- means Battle Art stages the battle but installs no Pokemon pictures, so
+    -- menus must also fall through to the live pokemon.sprite provider chain
+    -- for ordinary and shiny mons alike.
+    local ownsSpecies = true
+    if type(BA.ownsSpeciesArt) == "function" then
+      local okOwns, owns = pcall(BA.ownsSpeciesArt)
+      ownsSpecies = okOwns and owns and true or false
+    elseif type(BA.prefersModded) == "function" then
+      local okModded, modded = pcall(BA.prefersModded)
+      if okModded then ownsSpecies = not modded end
+    end
+    if not ownsSpecies then return nil end
+
     local species = mon.species
     if type(BA.speciesAlias) == "function" then
       local okAlias, alias = pcall(BA.speciesAlias, species)
@@ -407,21 +421,6 @@ local spritePortraitResolver = (function()
     if type(BA.isShiny) == "function" then
       local okShiny, detected = pcall(BA.isShiny, mon)
       shiny = okShiny and detected and true or false
-    end
-
-    -- Battle Art owns its imported shiny collections under DUPLICATE FIX:
-    -- BATTLE ART. MODDED deliberately leaves a confirmed shiny to the live
-    -- engine/sprite-provider resolver below.
-    if shiny then
-      local ownsShiny = true
-      if type(BA.ownsShinyArt) == "function" then
-        local okOwns, owns = pcall(BA.ownsShinyArt)
-        ownsShiny = okOwns and owns and true or false
-      elseif type(BA.prefersModded) == "function" then
-        local okModded, modded = pcall(BA.prefersModded)
-        if okModded then ownsShiny = not modded end
-      end
-      if not ownsShiny then return nil end
     end
 
     if mode == "static" then

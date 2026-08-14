@@ -6,6 +6,9 @@
   shiny front collection when `DUPLICATE FIX` is `BATTLE ART`. Animated sets
   intentionally display their first frame in menus, with separate normal and
   shiny atlas caches and the canonical `genN/shiny` asset layout.
+- Battle Art `MODDED` ownership now bypasses Battle Art portraits for ordinary
+  and shiny Pokémon alike, allowing the live sprite-provider chain to choose
+  the correct Party, Summary, PC, and Pokédex image.
 
 ## v1.4.1
 
