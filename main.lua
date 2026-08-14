@@ -2078,7 +2078,7 @@ local function drawPlayerHUD(battle, s, commandRect)
       local r,g,bb,aa=statusColor(status)
       local lg=love.graphics
       -- No background pill: draw status text directly on the plate.
-      printText(status,x+14*s,y+24.0*s,3.8*s,{r,g,bb,aa})
+      printText(status,x+15*s,y+24.0*s,3.8*s,{r,g,bb,aa})
       lg.setColor(1,1,1,1)
     end
   end)
@@ -4859,7 +4859,7 @@ local function drawPartyFinal(game, state)
     local hpBarW = math.max(18, hpValueX - hpBarX - 3)
 
     partyText("HP",hpLabelX,hpY,4,{0.08,0.08,0.08,1})
-    partyHPBarFinal(hpBarX,hpY+1,hpBarW,mon)
+    partyHPBarFinal(hpBarX,hpY+1+3*s,hpBarW,mon)
     partyText(hp,hpValueX,hpY,4,{0.08,0.08,0.08,1})
 
     local st = owStatus(mon)
@@ -4948,7 +4948,7 @@ local function drawPartyFinal(game, state)
 
     else
       partyText("HP",rx+19,y+8,3,{0.10,0.10,0.09,1})
-      partyHPBarFinal(rx+31,y+10,rw-35,m)
+      partyHPBarFinal(rx+31,y+10-3*s,rw-35,m)
     end
   end
 
