@@ -5025,11 +5025,12 @@ local function drawPartyFinal(game, state)
 
     for si,entry in ipairs(state.subItems) do
       local yy=sy+4+(si-1)*12
+      local textY=yy-1 -- Optical centering for the pixel font's low baseline.
       if si==state.subIndex then
         GoldCompat.frlgSelection(sx+3,yy,sw-6,11)
-        partyText(entry.label,sx+8,yy+1,6,{1,1,1,1})
+        partyText(entry.label,sx+8,textY,6,{1,1,1,1})
       else
-        partyText(entry.label,sx+8,yy+1,6,{0.06,0.06,0.06,1})
+        partyText(entry.label,sx+8,textY,6,{0.06,0.06,0.06,1})
       end
     end
   end
