@@ -4187,7 +4187,7 @@ local function partyHPBarFinal(x,y,w,mon)
   local ratio = clamp((mon.hp or 0)/maxhp,0,1)
   g.setColor(0.10,0.10,0.09,1)
   roundedRect("fill",x,y,w,4,1.5)
-  g.setColor(0.78,0.76,0.63,1)
+  g.setColor(0.26,0.28,0.26,1)
   roundedRect("fill",x+1,y+1,w-2,2,1)
   local fill = (w-2)*ratio
   if (mon.hp or 0)>0 then fill = math.max(1,fill) end
