@@ -1849,13 +1849,13 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   -- EXP row in pure logical units (no fixed pixels). It stays aligned with the
   -- HP bar's left start, but sits BELOW the status badge (which occupies
   -- y+22.2*s..29.2*s at x+8*s) so PSN/PAR/SLP/FRZ/BRN text has free space
-  -- under "HP". Lifted 3*s per request (total 8*s above plate bottom).
-  local rowY = plateY + plateH - 8*s
+  -- under "HP". Lifted per request (total 10*s above plate bottom).
+  local rowY = plateY + plateH - 10*s
 
   -- Rail starts at the HP bar's left (shifted 6*s right per request) and is
-  -- 100% of the available width (full span to the right plate inset).
+  -- 60% of the available width.
   local barX = plateX + 14*s
-  local barW = math.max(8*s, (right - barX) * 1.0)
+  local barW = math.max(8*s, (right - barX) * 0.60)
 
   -- Outer dark teal capsule.
   g.setColor(0.10,0.20,0.23,1)
