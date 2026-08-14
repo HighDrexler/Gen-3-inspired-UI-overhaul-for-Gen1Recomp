@@ -2097,7 +2097,13 @@ local function drawPlayerHUD(battle, s, commandRect)
       local r,g,bb,aa=statusColor(status)
       local lg=love.graphics
       -- No background pill: draw status text directly on the plate.
-      printText(status,x+14*s,y+24.0*s,3.8*s,{r,g,bb,aa})
+      -- SLP's compact glyphs sit optically low/right beside the EXP rail;
+      -- correct only that label without disturbing the approved PSN position.
+      local statusX,statusY=14,24.0
+      if tostring(status):upper():find("SLP",1,true) then
+        statusX,statusY=statusX-4,statusY-2
+      end
+      printText(status,x+statusX*s,y+statusY*s,3.8*s,{r,g,bb,aa})
       lg.setColor(1,1,1,1)
     end
   end)
