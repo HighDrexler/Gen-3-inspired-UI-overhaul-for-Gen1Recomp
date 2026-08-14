@@ -268,15 +268,18 @@ local spritePortraitResolver = (function()
     return BA, V
   end
 
-  local function battleArtsSet(V, generation)
-    local cached = R.baSets[generation]
+  local function battleArtsSet(V, generation, shiny)
+    local cacheKey = generation .. (shiny and ":shiny" or ":normal")
+    local cached = R.baSets[cacheKey]
     if cached ~= nil then return cached or nil end
     if type(V.data) ~= "function" then
-      R.baSets[generation] = false
+      R.baSets[cacheKey] = false
       return nil
     end
-    local ok, data = pcall(V.data, "animated_battle_sprites_" .. generation)
-    R.baSets[generation] = (ok and data) or false
+    local suffix = shiny and "_shiny" or ""
+    local ok, data = pcall(
+      V.data, "animated_battle_sprites_" .. generation .. suffix)
+    R.baSets[cacheKey] = (ok and data) or false
     return ok and data or nil
   end
 
@@ -310,13 +313,14 @@ local spritePortraitResolver = (function()
     return okData and data or nil
   end
 
-  local function battleArtsAnimatedFrame(BA, V, species, generation)
-    local set = battleArtsSet(V, generation)
+  local function battleArtsAnimatedFrame(BA, V, species, generation, shiny)
+    local set = battleArtsSet(V, generation, shiny)
     local def = set and set[tostring(species or ""):upper()]
     def = def and def.front
     if not (def and def.image) then return nil end
 
-    local key = "ba:read:" .. tostring(generation) .. ":" .. tostring(species)
+    local key = "ba:read:" .. tostring(generation) .. ":"
+      .. (shiny and "shiny:" or "normal:") .. tostring(species)
     local cached = R.cache[key]
     if cached ~= nil then
       return cached or nil
@@ -327,7 +331,12 @@ local spritePortraitResolver = (function()
       -- Read the PNG through Battle Arts' own exported mod API object.
       -- Loader:_api binds mod:read() to that mod's path, so no cross-mod VFS
       -- path probing or filesystem getInfo call is involved.
-      local sheet = battleArtsImageData(V, def.image)
+      local relative = def.image
+      if shiny and not relative:find("/shiny/", 1, true) then
+        relative = relative:gsub(
+          "^(assets/battle/front%-animated/gen[1-5])/", "%1/shiny/")
+      end
+      local sheet = battleArtsImageData(V, relative)
       if not sheet then return end
 
       local sw, sh = sheet:getDimensions()
@@ -370,6 +379,10 @@ local spritePortraitResolver = (function()
     if mode == "rom" then return nil end
 
     local species = mon.species
+    if type(BA.speciesAlias) == "function" then
+      local okAlias, alias = pcall(BA.speciesAlias, species)
+      if okAlias and alias then species = alias end
+    end
     local function slug(value)
       local name = tostring(value or ""):lower()
       name = name:gsub("♀", "-f"):gsub("♂", "-m")
@@ -390,36 +403,43 @@ local spritePortraitResolver = (function()
     end
 
     local generation = settingValue(BA.frontAnimationSetting)
+    local shiny = false
+    if type(BA.isShiny) == "function" then
+      local okShiny, detected = pcall(BA.isShiny, mon)
+      shiny = okShiny and detected and true or false
+    end
 
-    -- Battle Arts' MODDED mode only owns a picture when its matching shiny
-    -- override exists; otherwise normal pokemon.sprite ownership wins.
-    if type(BA.prefersModded) == "function" then
-      local okModded, modded = pcall(BA.prefersModded)
-      if okModded and modded then
-        if mode == "animated" and tostring(generation or ""):match("^gen[1-5]$") then
-          return preparedRelative(
-            "assets/battle/front-animated/shiny/" .. generation .. "/" .. name .. ".png")
-        elseif mode == "static" then
-          return preparedRelative(
-            "assets/battle/front-static/shiny/" .. name .. ".png")
-        end
-        return nil
+    -- Battle Art owns its imported shiny collections under DUPLICATE FIX:
+    -- BATTLE ART. MODDED deliberately leaves a confirmed shiny to the live
+    -- engine/sprite-provider resolver below.
+    if shiny then
+      local ownsShiny = true
+      if type(BA.ownsShinyArt) == "function" then
+        local okOwns, owns = pcall(BA.ownsShinyArt)
+        ownsShiny = okOwns and owns and true or false
+      elseif type(BA.prefersModded) == "function" then
+        local okModded, modded = pcall(BA.prefersModded)
+        if okModded then ownsShiny = not modded end
       end
+      if not ownsShiny then return nil end
     end
 
     if mode == "static" then
-      return preparedRelative("assets/battle/front-static/" .. name .. ".png")
+      local child = shiny and "shiny/" or ""
+      return preparedRelative(
+        "assets/battle/front-static/" .. child .. name .. ".png")
     end
 
     if mode ~= "animated" then return nil end
     if not tostring(generation or ""):match("^gen[1-5]$") then return nil end
 
     if generation == "gen1" then
+      local child = shiny and "shiny/" or ""
       return preparedRelative(
-        "assets/battle/front-animated/gen1/" .. name .. ".png")
+        "assets/battle/front-animated/gen1/" .. child .. name .. ".png")
     end
 
-    return battleArtsAnimatedFrame(BA, V, species, generation)
+    return battleArtsAnimatedFrame(BA, V, species, generation, shiny)
   end
 
   local function enginePalette(data, species, mon)
