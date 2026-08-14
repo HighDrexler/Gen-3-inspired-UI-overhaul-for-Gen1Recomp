@@ -2012,12 +2012,12 @@ local function drawEnemyHUD(battle, s)
   -- text (PSN/PAR/etc.) drawn at x+8*s.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+51*s,y+21.8*s+0*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+51*s,y+21.8*s-2*s,4.4*s,textColor,"right",53*s)
   end)
   local status=statusText(battle,b)
   if status then
     local r,g,bb,aa=statusColor(status)
-    printText(status,x+8*s,y+22.0*s,3.8*s,{r,g,bb,aa})
+    printText(status,x+12*s,y+24.0*s,3.8*s,{r,g,bb,aa})
   end
 end
 
@@ -2078,9 +2078,8 @@ local function drawPlayerHUD(battle, s, commandRect)
     if status then
       local r,g,bb,aa=statusColor(status)
       local lg=love.graphics
-      lg.setColor(r,g,bb,0.12)
-      roundedRect("fill",x+8*s,y+22.2*s,25*s,7.0*s,2.4*s)
-      printText(status,x+10*s,y+22.0*s,3.8*s,{r,g,bb,aa})
+      -- No background pill: draw status text directly on the plate.
+      printText(status,x+14*s,y+24.0*s,3.8*s,{r,g,bb,aa})
       lg.setColor(1,1,1,1)
     end
   end)
@@ -2088,7 +2087,7 @@ local function drawPlayerHUD(battle, s, commandRect)
   -- Numeric HP is also isolated.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+55*s,y+21.8*s+0*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+55*s,y+21.8*s-2*s,4.4*s,textColor,"right",53*s)
   end)
 end
 
