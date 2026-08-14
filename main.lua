@@ -1806,10 +1806,12 @@ local function drawStyledHP(x, y, w, h, battler)
   local hpFont = font(hpTextSize*UI_TEXT_SCALE)
   local hpTextH = hpFont and hpFont:getHeight() or hpTextSize
 
-  -- Keep a little breathing room inside the badge and center the label
-  -- vertically within the badge height.
+  -- Center HP vertically within the badge. Both h and the text's logical
+  -- height (hpTextSize) are in the same logical units, so this centers
+  -- correctly at every scale. (The font measurement is in pixels and must
+  -- not be mixed in here.)
   local hpPadX = h*0.18
-  local hpTextY = y + math.max(0,(h-hpTextH)*0.5)
+  local hpTextY = y + (h - hpTextSize)*0.5
   printText("HP", x+hpPadX, hpTextY, hpTextSize,
             {0.96,0.72,0.18,1},"center",badgeW-hpPadX*2)
 
