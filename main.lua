@@ -2101,7 +2101,7 @@ local function drawPlayerHUD(battle, s, commandRect)
       -- correct only that label without disturbing the approved PSN position.
       local statusX,statusY=14,24.0
       if tostring(status):upper():find("SLP",1,true) then
-        statusX,statusY=statusX-4,statusY-2
+        statusX,statusY=statusX-2,statusY-1
       end
       printText(status,x+statusX*s,y+statusY*s,3.8*s,{r,g,bb,aa})
       lg.setColor(1,1,1,1)
