@@ -5023,7 +5023,7 @@ local function drawPartyFinal(game, state)
   else
     prompt = tostring(state:bottomMessage() or ""):gsub("\n"," ")
   end
-  partyText(prompt,9,129,6,{1,1,1,1})
+  partyText(prompt,9,127,6,{1,1,1,1})
 
   -- Existing submenu.
   if state.submenu and state.subItems then
