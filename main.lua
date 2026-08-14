@@ -4842,9 +4842,10 @@ local function drawPartyFinal(game, state)
   -- stopping at row 127 preserves the black switch prompt at the bottom.
   g.setColor(1,1,1,1)
   g.rectangle("fill",0,16,160,111)
-  -- Mask the upper-center sparkle without covering the top-right DV reader.
-  -- The title is deliberately redrawn over this strip below.
-  g.rectangle("fill",0,0,105,16)
+  -- The sparkle is centered at logical x=86 and can extend above this canvas.
+  -- Mask only its footprint so screen-anchored overlays (notably the DV
+  -- reader) remain untouched at every resolution.
+  g.rectangle("fill",82,-8,9,24)
 
   -- Header title only (no black/cream frame box around it).
   partyText(Strings("POKéMON"),10,6,6,{0.06,0.06,0.06,1})
@@ -4898,7 +4899,7 @@ local function drawPartyFinal(game, state)
     local hpBarW = math.max(18, hpValueX - hpBarX - 3)
 
     partyText("HP",hpLabelX,hpY,4,{0.08,0.08,0.08,1})
-    partyHPBarFinal(hpBarX,hpY+4,hpBarW,mon)
+    partyHPBarFinal(hpBarX,hpY+3,hpBarW,mon)
     partyText(hp,hpValueX,hpY,4,{0.08,0.08,0.08,1})
 
     local st = owStatus(mon)
