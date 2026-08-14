@@ -1806,11 +1806,10 @@ local function drawStyledHP(x, y, w, h, battler)
   local hpFont = font(hpTextSize*UI_TEXT_SCALE)
   local hpTextH = hpFont and hpFont:getHeight() or hpTextSize
 
-  -- Keep a little breathing room inside the badge and bias the label upward.
-  -- Pixel fonts visually sit lower than their nominal bounding box, so a
-  -- slight negative offset looks centered against the HP bar.
+  -- Keep a little breathing room inside the badge and center the label
+  -- vertically within the badge height.
   local hpPadX = h*0.18
-  local hpTextY = y + math.max(0,(h-hpTextH)*0.5) - h*0.10
+  local hpTextY = y + math.max(0,(h-hpTextH)*0.5)
   printText("HP", x+hpPadX, hpTextY, hpTextSize,
             {0.96,0.72,0.18,1},"center",badgeW-hpPadX*2)
 
