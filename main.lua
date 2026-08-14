@@ -1807,12 +1807,10 @@ local function drawStyledHP(x, y, w, h, battler)
   local hpTextH = hpFont and hpFont:getHeight() or hpTextSize
 
   -- Nudge HP UP (opposite of the centering that pushed it down): shift by
-  -- half the height delta upward, plus a 1px-up / 2px-right micro-adjust to
-  -- visually center the glyph in the badge. h and hpTextSize are logical
-  -- units, so the pixel nudges use s (logical px).
+  -- half the height delta upward. h and hpTextSize are logical units.
   local hpPadX = h*0.18
-  local hpTextY = y - (h - hpTextSize)*0.5 - 1/s
-  printText("HP", x+hpPadX+2/s, hpTextY, hpTextSize,
+  local hpTextY = y - (h - hpTextSize)*0.5
+  printText("HP", x+hpPadX, hpTextY, hpTextSize,
             {0.96,0.72,0.18,1},"center",badgeW-hpPadX*2)
 
   local bx = x + badgeW - h*0.20
