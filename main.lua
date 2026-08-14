@@ -4167,10 +4167,10 @@ end
 
 local function partySlotPanel(x,y,w,h,selected)
   local g = love.graphics
-  g.setColor(0.14,0.14,0.13,1)
-  roundedRect("fill",x,y,w,h,3)
+  -- Borderless card: drop the dark outer fill so the panel is transparent
+  -- except for its cream face (keeps overlays such as the DV reader visible).
   g.setColor(selected and {0.975,0.955,0.88,1} or {0.99,0.985,0.955,1})
-  roundedRect("fill",x+2,y+2,w-4,h-4,2)
+  roundedRect("fill",x,y,w,h,3)
   if selected then
     g.setColor(0.72,0.58,0.28,1)
     roundedRect("line",x+3,y+3,w-6,h-6,2)
@@ -4866,13 +4866,13 @@ local function drawPartyFinal(game, state)
 
     local st = owStatus(mon)
     if st then
-      partyText(st,lx+9,ly+51,4,
+      partyText(st,lx+12,ly+54,4,
         st=="FNT" and {0.52,0.10,0.08,1} or {0.40,0.15,0.44,1})
     end
 
     -- Live Party EXP, matching the battle HUD's blue language.
     partyText("EXP",lx+9,ly+58,3,{0.34,0.45,0.50,1})
-    GoldCompat.drawPartyExpBar(game,mon,lx+21,ly+59,lw-29)
+    GoldCompat.drawPartyExpBar(game,mon,lx+20,ly+59,lw-29)
 
     local integratedLearn = State.activeMoveLearn
     local battleIntegrated =
