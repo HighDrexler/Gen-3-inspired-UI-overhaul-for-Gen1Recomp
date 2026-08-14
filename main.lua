@@ -8262,7 +8262,8 @@ function GoldCompat.drawGoldPack(pack,winW,winH,embedded)
   roundedRect("fill",x,y,w,h,4)
   G.setColor(0.99,0.985,0.95,1)
   roundedRect("fill",x+2,y+2,w-4,h-4,3)
-  drawUnifiedBorder(x,y,w,h,1)
+  -- The outer black fill already supplies the Pack frame. Do not add the
+  -- configurable brown inner stroke here; it competes with that clean frame.
 
   local pocket=pack.pocket and pack:pocket() or {id="ITEM",label="ITEMS"}
   local tabs={"ITEMS","BALLS","KEY","TM/HM"}
@@ -8333,21 +8334,22 @@ function GoldCompat.drawGoldPack(pack,winW,winH,embedded)
   for r=1,visible do
     local idx=first+r-1
     local yy=y+23+(r-1)*10
+    local textY=yy-1 -- Optical centering for the pixel font's low baseline.
     local row=rows[idx]
     local selected=idx==(pack.index or 1)
     if row then
       local label=tostring(row.name or row.id or "")
-      GoldCompat.panelText(label,x+9,yy+1,4.5,
+      GoldCompat.panelText(label,x+9,textY,4.5,
         selected and {1,1,1,1} or {0.06,0.06,0.06,1},"left",w-27)
       if row.showCount then
-        GoldCompat.panelText("×"..tostring(row.count or 1),x+w-20,yy+1,3.5,
+        GoldCompat.panelText("×"..tostring(row.count or 1),x+w-20,textY,3.5,
           selected and {1,1,1,1} or {0.28,0.28,0.25,1},"right",12)
       elseif row.teaches then
-        GoldCompat.panelText(row.teaches,x+w-31,yy+1,3.0,
+        GoldCompat.panelText(row.teaches,x+w-31,textY,3.0,
           selected and {0.90,0.90,0.86,1} or {0.34,0.34,0.31,1},"right",24)
       end
     elseif idx==#rows+1 then
-      GoldCompat.panelText("CANCEL",x+9,yy+1,4.5,
+      GoldCompat.panelText("CANCEL",x+9,textY,4.5,
         selected and {1,1,1,1} or {0.06,0.06,0.06,1})
     end
   end
