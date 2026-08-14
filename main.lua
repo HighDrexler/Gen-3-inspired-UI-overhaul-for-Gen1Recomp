@@ -4190,10 +4190,8 @@ end
 
 local function partySlotPanel(x,y,w,h,selected)
   local g = love.graphics
-  g.setColor(0.14,0.14,0.13,1)
-  roundedRect("fill",x,y,w,h,3)
   g.setColor(selected and {0.975,0.955,0.88,1} or {0.99,0.985,0.955,1})
-  roundedRect("fill",x+2,y+2,w-4,h-4,2)
+  roundedRect("fill",x,y,w,h,3)
   if selected then
     g.setColor(0.72,0.58,0.28,1)
     roundedRect("line",x+3,y+3,w-6,h-6,2)
