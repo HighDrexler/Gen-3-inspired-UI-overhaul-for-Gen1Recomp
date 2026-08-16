@@ -1,0 +1,77 @@
+name: Publish Gen 3 UI 2.0.0
+
+on:
+  push:
+    paths:
+      - '.release_payload/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild verified 2.0.0 payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .release_payload/part-* > /tmp/gen3_battle_ui-2.0.0.b64
+          base64 --decode /tmp/gen3_battle_ui-2.0.0.b64 > /tmp/gen3_battle_ui-2.0.0.zip
+          unzip -t /tmp/gen3_battle_ui-2.0.0.zip
+          rm -rf /tmp/gen3-ui-release
+          mkdir -p /tmp/gen3-ui-release
+          unzip -q /tmp/gen3_battle_ui-2.0.0.zip -d /tmp/gen3-ui-release
+          test -f /tmp/gen3-ui-release/gen3_battle_ui/main.lua
+          test -f /tmp/gen3-ui-release/gen3_battle_ui/manifest.json
+          test -f /tmp/gen3-ui-release/gen3_battle_ui/README.md
+          test -f /tmp/gen3-ui-release/gen3_battle_ui/CHANGELOG.md
+
+      - name: Make repository itself launcher-ready
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp /tmp/gen3-ui-release/gen3_battle_ui/main.lua ./main.lua
+          cp /tmp/gen3-ui-release/gen3_battle_ui/manifest.json ./manifest.json
+          cp /tmp/gen3-ui-release/gen3_battle_ui/README.md ./README.md
+          cp /tmp/gen3-ui-release/gen3_battle_ui/CHANGELOG.md ./CHANGELOG.md
+
+          # Do not ship old release archives inside the source repository.
+          # GitHub's own Download ZIP should contain the live mod files directly.
+          find . -maxdepth 1 -type f -name '*.zip' -delete
+
+          # Remove the one-shot transfer scaffolding before the release commit.
+          rm -rf .release_payload
+          rm -f .github/workflows/release-2.0.0.yml
+          rmdir .github/workflows 2>/dev/null || true
+          rmdir .github 2>/dev/null || true
+
+          git config user.name 'HighDrexler Release Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'Release Gen 3 Inspired UI Overhaul 2.0.0'
+          git push origin HEAD:main
+
+      - name: Publish GitHub release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          awk '
+            /^## 2\.0\.0$/ { keep=1; next }
+            /^## / && keep { exit }
+            keep { print }
+          ' /tmp/gen3-ui-release/gen3_battle_ui/CHANGELOG.md > /tmp/release-notes.md
+
+          gh release create v2.0.0 \
+            /tmp/gen3_battle_ui-2.0.0.zip \
+            --repo '${{ github.repository }}' \
+            --target main \
+            --title 'Gen 3 Inspired UI Overhaul v2.0.0' \
+            --notes-file /tmp/release-notes.md
