@@ -1,43 +1,31 @@
-# Gen 3 Inspired UI Overhaul for Gen1Recomp
+# Gen 3 Inspired UI Overhaul — v2.0.0
 
-A presentation-focused UI overhaul for Pokémon Red/Blue/Yellow and Pokémon Gold/Silver/Crystal in Gen1Recomp, inspired by Generation III while preserving native gameplay logic.
+A full presentation overhaul for Gen1Recomp, rebuilding the Gen I and Gen II interface around a cohesive Gen 3-inspired visual language while keeping the games' native logic, callbacks, battle rules, save data and progression authoritative.
 
-## Current stable release
+## Install
 
-**v1.4.1** is the stable maintenance baseline. It promotes the complete tested v1.4.13 development feature set and performs a behavior-preserving cleanup for future development.
+Install the zip through the Gen1Recomp launcher, or place the `gen3_battle_ui` folder in the launcher `mods/` directory. The mod ID remains `gen3_battle_ui`, so existing settings continue to follow the same install.
 
-## Highlights
+Disable `colosseum_ui_overhaul` while using this mod because both mods intentionally own many of the same presentation surfaces.
 
-- Gen 3-inspired battle HUD, command menu, move selection and dialogue
-- Redesigned Party, PC, Pokédex, Bag, Start, Options, Mods and Trainer screens
-- Gen 1 and Gen 2 UI support
-- Native-backed Move Manager integration
-- Gen 2 Pokédex catch-location screen
-- Mobile/iOS battle HUD option
-- Text size, text weight and UI box scaling controls
-- Battle Arts resolved-sprite compatibility
-- Presentation-only design: battle state and gameplay logic remain engine-owned
+## Major coverage
 
-## Repository direction
+- Gen I + Gen II battle HUDs, command/move selection, battle dialogue, trainer switching, party indicators and level-up presentation
+- Pokémon/Party, Summary, Move Manager, TM/HM teaching, starter selection and naming/nickname flows
+- Pokédex, encounter/location data, PC/storage, item storage, Bag, PokéMart and service menus
+- Save, Start, Options/UI settings, Mod Manager, Trainer Card/badges and Pokégear
+- Unified overworld dialogue, location banners and wide-screen menu presentation
+- User-selectable primary/secondary UI colors plus font style, size, weight, character spacing, line spacing, dialogue scale and border controls
 
-Beginning with v1.4.1, this repository is the canonical home of the mod. Source, documentation and future release history belong here rather than in version-specific updater repositories.
+## Compatibility priorities
 
-The project deliberately keeps gameplay-sensitive systems native wherever possible. See `ARCHITECTURE.md` in the v1.4.1 source package for the maintenance and compatibility boundaries used during development.
+The mod is presentation-only. Pokémon artwork is resolved through the active Gen1Recomp/mod sprite pipeline rather than replaced by a private sprite source, so Battle Arts, ROM sprites and compatible custom sprite packs can remain authoritative. The same resolved sprite source is reused across battle, Party, Summary, PC and Pokédex where possible.
 
-## Installation
+When **Battle UI** is enabled, the mod owns battle interface presentation completely: native command/status HUD chrome is suppressed while the battlefield and externally supplied Pokémon artwork remain available to compatible renderer/sprite mods.
 
-Install through the Gen1Recomp launcher/mod workflow when available, or install the packaged release according to Gen1Recomp's normal mod installation process.
+## Notes
 
-## Updating
-
-Future stable versions will keep the same mod ID (`gen3_battle_ui`) and canonical GitHub repository so launcher update discovery can follow one continuous project instead of jumping between version-specific repositories.
-
-## Compatibility philosophy
-
-This mod owns presentation, not Pokémon/gameplay state. Battle Arts and other sprite providers remain responsible for resolved Pokémon artwork; the UI consumes the active resolved sprite source rather than replacing it.
-
-## Development
-
-Current stable baseline: **1.4.1**
-
-Canonical repository: `HighDrexler/Gen-3-inspired-UI-overhaul-for-Gen1Recomp`
+- Supports Gen I and Gen II.
+- Launcher API: 2.
+- Conflicts with `colosseum_ui_overhaul`.
+- Gameplay mechanics are not intentionally changed by this mod.
