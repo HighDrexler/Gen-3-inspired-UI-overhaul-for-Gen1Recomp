@@ -268,15 +268,18 @@ local spritePortraitResolver = (function()
     return BA, V
   end
 
-  local function battleArtsSet(V, generation)
-    local cached = R.baSets[generation]
+  local function battleArtsSet(V, generation, shiny)
+    local cacheKey = generation .. (shiny and ":shiny" or ":normal")
+    local cached = R.baSets[cacheKey]
     if cached ~= nil then return cached or nil end
     if type(V.data) ~= "function" then
-      R.baSets[generation] = false
+      R.baSets[cacheKey] = false
       return nil
     end
-    local ok, data = pcall(V.data, "animated_battle_sprites_" .. generation)
-    R.baSets[generation] = (ok and data) or false
+    local suffix = shiny and "_shiny" or ""
+    local ok, data = pcall(
+      V.data, "animated_battle_sprites_" .. generation .. suffix)
+    R.baSets[cacheKey] = (ok and data) or false
     return ok and data or nil
   end
 
@@ -310,13 +313,14 @@ local spritePortraitResolver = (function()
     return okData and data or nil
   end
 
-  local function battleArtsAnimatedFrame(BA, V, species, generation)
-    local set = battleArtsSet(V, generation)
+  local function battleArtsAnimatedFrame(BA, V, species, generation, shiny)
+    local set = battleArtsSet(V, generation, shiny)
     local def = set and set[tostring(species or ""):upper()]
     def = def and def.front
     if not (def and def.image) then return nil end
 
-    local key = "ba:read:" .. tostring(generation) .. ":" .. tostring(species)
+    local key = "ba:read:" .. tostring(generation) .. ":"
+      .. (shiny and "shiny:" or "normal:") .. tostring(species)
     local cached = R.cache[key]
     if cached ~= nil then
       return cached or nil
@@ -327,7 +331,12 @@ local spritePortraitResolver = (function()
       -- Read the PNG through Battle Arts' own exported mod API object.
       -- Loader:_api binds mod:read() to that mod's path, so no cross-mod VFS
       -- path probing or filesystem getInfo call is involved.
-      local sheet = battleArtsImageData(V, def.image)
+      local relative = def.image
+      if shiny and not relative:find("/shiny/", 1, true) then
+        relative = relative:gsub(
+          "^(assets/battle/front%-animated/gen[1-5])/", "%1/shiny/")
+      end
+      local sheet = battleArtsImageData(V, relative)
       if not sheet then return end
 
       local sw, sh = sheet:getDimensions()
@@ -369,7 +378,25 @@ local spritePortraitResolver = (function()
     local mode = settingValue(BA.setting)
     if mode == "rom" then return nil end
 
+    -- DUPLICATE FIX is a complete species-art ownership decision. MODDED
+    -- means Battle Art stages the battle but installs no Pokemon pictures, so
+    -- menus must also fall through to the live pokemon.sprite provider chain
+    -- for ordinary and shiny mons alike.
+    local ownsSpecies = true
+    if type(BA.ownsSpeciesArt) == "function" then
+      local okOwns, owns = pcall(BA.ownsSpeciesArt)
+      ownsSpecies = okOwns and owns and true or false
+    elseif type(BA.prefersModded) == "function" then
+      local okModded, modded = pcall(BA.prefersModded)
+      if okModded then ownsSpecies = not modded end
+    end
+    if not ownsSpecies then return nil end
+
     local species = mon.species
+    if type(BA.speciesAlias) == "function" then
+      local okAlias, alias = pcall(BA.speciesAlias, species)
+      if okAlias and alias then species = alias end
+    end
     local function slug(value)
       local name = tostring(value or ""):lower()
       name = name:gsub("♀", "-f"):gsub("♂", "-m")
@@ -390,36 +417,28 @@ local spritePortraitResolver = (function()
     end
 
     local generation = settingValue(BA.frontAnimationSetting)
-
-    -- Battle Arts' MODDED mode only owns a picture when its matching shiny
-    -- override exists; otherwise normal pokemon.sprite ownership wins.
-    if type(BA.prefersModded) == "function" then
-      local okModded, modded = pcall(BA.prefersModded)
-      if okModded and modded then
-        if mode == "animated" and tostring(generation or ""):match("^gen[1-5]$") then
-          return preparedRelative(
-            "assets/battle/front-animated/shiny/" .. generation .. "/" .. name .. ".png")
-        elseif mode == "static" then
-          return preparedRelative(
-            "assets/battle/front-static/shiny/" .. name .. ".png")
-        end
-        return nil
-      end
+    local shiny = false
+    if type(BA.isShiny) == "function" then
+      local okShiny, detected = pcall(BA.isShiny, mon)
+      shiny = okShiny and detected and true or false
     end
 
     if mode == "static" then
-      return preparedRelative("assets/battle/front-static/" .. name .. ".png")
+      local child = shiny and "shiny/" or ""
+      return preparedRelative(
+        "assets/battle/front-static/" .. child .. name .. ".png")
     end
 
     if mode ~= "animated" then return nil end
     if not tostring(generation or ""):match("^gen[1-5]$") then return nil end
 
     if generation == "gen1" then
+      local child = shiny and "shiny/" or ""
       return preparedRelative(
-        "assets/battle/front-animated/gen1/" .. name .. ".png")
+        "assets/battle/front-animated/gen1/" .. child .. name .. ".png")
     end
 
-    return battleArtsAnimatedFrame(BA, V, species, generation)
+    return battleArtsAnimatedFrame(BA, V, species, generation, shiny)
   end
 
   local function enginePalette(data, species, mon)
@@ -602,8 +621,8 @@ local OPTION_DEFAULTS = {
   hideNativeBattleUI = false,
   mobileBattleUI = false,
   iosTopBattleHUD = false,
-  uiTextSize = "normal",
-  uiTextWeight = "normal",
+  uiTextSize = "large",
+  uiTextWeight = "thin",
   uiBoxScale = "normal",
   uiBorderColor = "gold",
   uiBorderStyle = "classic",
@@ -1007,7 +1026,7 @@ local function installVerifiedOptions(mod)
       key = "uiTextSize",
       type = "choice",
       label = "TEXT SIZE",
-      default = "normal",
+      default = "large",
       choices = {
         {"SMALL","small"},
         {"NORMAL","normal"},
@@ -1019,7 +1038,7 @@ local function installVerifiedOptions(mod)
       key = "uiTextWeight",
       type = "choice",
       label = "TEXT THICKNESS",
-      default = "normal",
+      default = "thin",
       choices = {
         {"THIN","thin"},
         {"NORMAL","normal"},
@@ -1806,11 +1825,10 @@ local function drawStyledHP(x, y, w, h, battler)
   local hpFont = font(hpTextSize*UI_TEXT_SCALE)
   local hpTextH = hpFont and hpFont:getHeight() or hpTextSize
 
-  -- Keep a little breathing room inside the badge and bias the label upward.
-  -- Pixel fonts visually sit lower than their nominal bounding box, so a
-  -- slight negative offset looks centered against the HP bar.
+  -- Nudge HP UP (opposite of the centering that pushed it down): shift by
+  -- half the height delta upward. h and hpTextSize are logical units.
   local hpPadX = h*0.18
-  local hpTextY = y + math.max(0,(h-hpTextH)*0.5) - h*0.10
+  local hpTextY = y - (h - hpTextSize)*0.5
   printText("HP", x+hpPadX, hpTextY, hpTextSize,
             {0.96,0.72,0.18,1},"center",badgeW-hpPadX*2)
 
@@ -1846,15 +1864,16 @@ function GoldCompat.drawEXPRow(plateX, plateY, plateW, plateH, battle, battler, 
   local left = plateX + 7*s
   local right = plateX + plateW - 6*s
   local barH = 4.6*s
-  -- EXP row in pure logical units (no fixed pixels) so it stays aligned with
-  -- the HP readout at every resolution. Sits 6*s above the box bottom, clear
-  -- of both the HP bar/readout above and the box edge below.
+  -- EXP row in pure logical units (no fixed pixels). It stays aligned with the
+  -- HP bar's left start, but sits BELOW the status badge (which occupies
+  -- y+22.2*s..29.2*s at x+8*s) so PSN/PAR/SLP/FRZ/BRN text has free space
+  -- under "HP". Lifted per request (total 10*s above plate bottom).
   local rowY = plateY + plateH - 10*s
 
-  -- Rail starts at the HP bar's start and is 140% of its previous (half)
-  -- span (=70% of full width), fitting beside any 3-digit HP readout.
-  local barX = plateX + 8*s
-  local barW = math.max(8*s, (right - barX) * 0.70)
+  -- Rail starts at the HP bar's left (shifted 23*s right per request) and is
+  -- 60% of the available width.
+  local barX = plateX + 23*s
+  local barW = math.max(8*s, (right - barX) * 0.60)
 
   -- Outer dark teal capsule.
   g.setColor(0.10,0.20,0.23,1)
@@ -2006,16 +2025,17 @@ local function drawEnemyHUD(battle, s)
 
   drawStyledHP(x+7*s,y+14.5*s,97*s,7*s,b)
 
-  -- Numeric HP readout inside the box, left-aligned to the HP bar start so it
-  -- sits clear of the right edge of the plate.
+  -- Numeric HP readout inside the box, right-aligned to the END of the HP bar
+  -- (x+7*s + 97*s = x+104*s) so the left-under-HP zone is free for the status
+  -- text (PSN/PAR/etc.) drawn at x+8*s.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+8*s,y+21.8*s+1*s,4.4*s,textColor,"left",53*s)
+    printText(hpText,x+51*s,y+21.8*s+0*s,4.4*s,textColor,"right",53*s)
   end)
   local status=statusText(battle,b)
   if status then
     local r,g,bb,aa=statusColor(status)
-    printText(status,x+8*s,y+22.0*s,3.8*s,{r,g,bb,aa})
+    printText(status,x+10*s,y+23.0*s,3.8*s,{r,g,bb,aa})
   end
 end
 
@@ -2076,9 +2096,14 @@ local function drawPlayerHUD(battle, s, commandRect)
     if status then
       local r,g,bb,aa=statusColor(status)
       local lg=love.graphics
-      lg.setColor(r,g,bb,0.12)
-      roundedRect("fill",x+8*s,y+22.2*s,25*s,7.0*s,2.4*s)
-      printText(status,x+10*s,y+22.0*s,3.8*s,{r,g,bb,aa})
+      -- No background pill: draw status text directly on the plate.
+      -- SLP's compact glyphs sit optically low/right beside the EXP rail;
+      -- correct only that label without disturbing the approved PSN position.
+      local statusX,statusY=14,24.0
+      if tostring(status):upper():find("SLP",1,true) then
+        statusX,statusY=statusX-2,statusY-1
+      end
+      printText(status,x+statusX*s,y+statusY*s,3.8*s,{r,g,bb,aa})
       lg.setColor(1,1,1,1)
     end
   end)
@@ -2086,7 +2111,7 @@ local function drawPlayerHUD(battle, s, commandRect)
   -- Numeric HP is also isolated.
   pcall(function()
     local hpText=tostring(shownHP(b)).." / "..tostring(maxHP(b))
-    printText(hpText,x+55*s,y+21.8*s+1*s,4.4*s,textColor,"right",53*s)
+    printText(hpText,x+55*s,y+21.8*s+0*s,4.4*s,textColor,"right",53*s)
   end)
 end
 
@@ -4163,12 +4188,19 @@ local function partyLogicalCanvas()
   return ox, oy, scale
 end
 
-local function partySlotPanel(x,y,w,h,selected)
+local function partySlotPanel(x,y,w,h,selected,thickSelected)
   local g = love.graphics
-  g.setColor(0.14,0.14,0.13,1)
-  roundedRect("fill",x,y,w,h,3)
+  if selected and thickSelected then
+    -- The highlighted list row inherits the old black-frame footprint, but
+    -- brown now owns that entire border. Only the active row receives it.
+    g.setColor(0.72,0.58,0.28,1)
+    roundedRect("fill",x,y,w,h,3)
+    g.setColor(0.975,0.955,0.88,1)
+    roundedRect("fill",x+2,y+2,w-4,h-4,2)
+    return
+  end
   g.setColor(selected and {0.975,0.955,0.88,1} or {0.99,0.985,0.955,1})
-  roundedRect("fill",x+2,y+2,w-4,h-4,2)
+  roundedRect("fill",x,y,w,h,3)
   if selected then
     g.setColor(0.72,0.58,0.28,1)
     roundedRect("line",x+3,y+3,w-6,h-6,2)
@@ -4181,7 +4213,7 @@ local function partyHPBarFinal(x,y,w,mon)
   local ratio = clamp((mon.hp or 0)/maxhp,0,1)
   g.setColor(0.10,0.10,0.09,1)
   roundedRect("fill",x,y,w,4,1.5)
-  g.setColor(0.78,0.76,0.63,1)
+  g.setColor(0.26,0.28,0.26,1)
   roundedRect("fill",x+1,y+1,w-2,2,1)
   local fill = (w-2)*ratio
   if (mon.hp or 0)>0 then fill = math.max(1,fill) end
@@ -4799,13 +4831,26 @@ local function drawPartyFinal(game, state)
   -- battle-quality typography directly in final screen pixels.
   partyRenderOX, partyRenderOY, partyRenderScale = ox, oy, sc
 
+  -- Party is intentionally opaque across the physical window, not merely the
+  -- scaled 160x144 game canvas. This clears aspect-ratio bars plus any
+  -- screen-anchored battle overlays at portrait, ultrawide, and intermediate
+  -- resolutions before rebuilding the menu in logical coordinates.
+  g.push("all")
+  g.origin()
+  g.setColor(1,1,1,1)
+  local screenW,screenH=g.getDimensions()
+  g.rectangle("fill",0,0,screenW,screenH)
+  g.pop()
+
   g.push("all")
   g.translate(ox,oy)
   g.scale(sc,sc)
 
-  -- No full-canvas backplate: keep the menu transparent so overlays such as
-  -- the DV reader show through. Only the individual Pokémon cards paint a
-  -- beige panel (see partySlotPanel below).
+  -- Party owns the complete logical viewport inside the aspect-ratio bars.
+  -- This hides battle-only overlays (DV readout and shiny sparkles) while the
+  -- title, cards, and prompt are redrawn cleanly on top below.
+  g.setColor(1,1,1,1)
+  g.rectangle("fill",0,0,160,144)
 
   -- Header title only (no black/cream frame box around it).
   partyText(Strings("POKéMON"),10,6,6,{0.06,0.06,0.06,1})
@@ -4859,18 +4904,22 @@ local function drawPartyFinal(game, state)
     local hpBarW = math.max(18, hpValueX - hpBarX - 3)
 
     partyText("HP",hpLabelX,hpY,4,{0.08,0.08,0.08,1})
-    partyHPBarFinal(hpBarX,hpY+1,hpBarW,mon)
+    partyHPBarFinal(hpBarX,hpY+2,hpBarW,mon)
     partyText(hp,hpValueX,hpY,4,{0.08,0.08,0.08,1})
 
     local st = owStatus(mon)
     if st then
-      partyText(st,lx+9,ly+51,4,
+      -- Share the HP/EXP label column and sit at the exact midpoint between
+      -- their logical rows, clear of both the HP value and EXP rail.
+      local statusY=ly+50.5
+      if tostring(st):upper():find("SLP",1,true) then statusY=statusY-1 end
+      partyText(st,lx+9,statusY,4,
         st=="FNT" and {0.52,0.10,0.08,1} or {0.40,0.15,0.44,1})
     end
 
     -- Live Party EXP, matching the battle HUD's blue language.
-    partyText("EXP",lx+9,ly+58,3,{0.34,0.45,0.50,1})
-    GoldCompat.drawPartyExpBar(game,mon,lx+21,ly+59,lw-29)
+    partyText("EXP",lx+10,ly+58,3,{0.34,0.45,0.50,1})
+    GoldCompat.drawPartyExpBar(game,mon,lx+19,ly+59,lw-29)
 
     local integratedLearn = State.activeMoveLearn
     local battleIntegrated =
@@ -4901,19 +4950,9 @@ local function drawPartyFinal(game, state)
     local isSelected = i == selected
     local d = game.data.pokemon[m.species]
 
-    -- Selected row gets dark highlight, others stay light.
-    if isSelected then
-      g.setColor(0.10,0.10,0.10,1)
-      roundedRect("fill",rx,y,rw,slotH,3)
-      g.setColor(0.985,0.975,0.92,1)
-      roundedRect("fill",rx+2,y+2,rw-4,slotH-4,2)
-      -- Party screen is intentionally theme-locked.
-      g.setColor(0.62,0.48,0.20,1)
-      roundedRect("line",rx+3,y+3,rw-6,slotH-6,2)
-      g.setColor(1,1,1,1)
-    else
-      partySlotPanel(rx,y,rw,slotH,false)
-    end
+    -- Ordinary rows remain borderless; the active row promotes the same brown
+    -- selection color into the old frame's full two-pixel footprint.
+    partySlotPanel(rx,y,rw,slotH,isSelected,true)
 
     PartyMenu.drawIcon(game,m,rx+2,y,false,state.blink or 0)
 
@@ -4948,7 +4987,7 @@ local function drawPartyFinal(game, state)
 
     else
       partyText("HP",rx+19,y+8,3,{0.10,0.10,0.09,1})
-      partyHPBarFinal(rx+31,y+10,rw-35,m)
+      partyHPBarFinal(rx+31,y+9,rw-35,m)
     end
   end
 
@@ -4984,7 +5023,7 @@ local function drawPartyFinal(game, state)
   else
     prompt = tostring(state:bottomMessage() or ""):gsub("\n"," ")
   end
-  partyText(prompt,9,129,6,{1,1,1,1})
+  partyText(prompt,9,127,6,{1,1,1,1})
 
   -- Existing submenu.
   if state.submenu and state.subItems then
@@ -4997,11 +5036,12 @@ local function drawPartyFinal(game, state)
 
     for si,entry in ipairs(state.subItems) do
       local yy=sy+4+(si-1)*12
+      local textY=yy-1 -- Optical centering for the pixel font's low baseline.
       if si==state.subIndex then
         GoldCompat.frlgSelection(sx+3,yy,sw-6,11)
-        partyText(entry.label,sx+8,yy+1,6,{1,1,1,1})
+        partyText(entry.label,sx+8,textY,6,{1,1,1,1})
       else
-        partyText(entry.label,sx+8,yy+1,6,{0.06,0.06,0.06,1})
+        partyText(entry.label,sx+8,textY,6,{0.06,0.06,0.06,1})
       end
     end
   end
@@ -8222,7 +8262,8 @@ function GoldCompat.drawGoldPack(pack,winW,winH,embedded)
   roundedRect("fill",x,y,w,h,4)
   G.setColor(0.99,0.985,0.95,1)
   roundedRect("fill",x+2,y+2,w-4,h-4,3)
-  drawUnifiedBorder(x,y,w,h,1)
+  -- The outer black fill already supplies the Pack frame. Do not add the
+  -- configurable brown inner stroke here; it competes with that clean frame.
 
   local pocket=pack.pocket and pack:pocket() or {id="ITEM",label="ITEMS"}
   local tabs={"ITEMS","BALLS","KEY","TM/HM"}
@@ -8293,21 +8334,22 @@ function GoldCompat.drawGoldPack(pack,winW,winH,embedded)
   for r=1,visible do
     local idx=first+r-1
     local yy=y+23+(r-1)*10
+    local textY=yy-1 -- Optical centering for the pixel font's low baseline.
     local row=rows[idx]
     local selected=idx==(pack.index or 1)
     if row then
       local label=tostring(row.name or row.id or "")
-      GoldCompat.panelText(label,x+9,yy+1,4.5,
+      GoldCompat.panelText(label,x+9,textY,4.5,
         selected and {1,1,1,1} or {0.06,0.06,0.06,1},"left",w-27)
       if row.showCount then
-        GoldCompat.panelText("×"..tostring(row.count or 1),x+w-20,yy+1,3.5,
+        GoldCompat.panelText("×"..tostring(row.count or 1),x+w-20,textY,3.5,
           selected and {1,1,1,1} or {0.28,0.28,0.25,1},"right",12)
       elseif row.teaches then
-        GoldCompat.panelText(row.teaches,x+w-31,yy+1,3.0,
+        GoldCompat.panelText(row.teaches,x+w-31,textY,3.0,
           selected and {0.90,0.90,0.86,1} or {0.34,0.34,0.31,1},"right",24)
       end
     elseif idx==#rows+1 then
-      GoldCompat.panelText("CANCEL",x+9,yy+1,4.5,
+      GoldCompat.panelText("CANCEL",x+9,textY,4.5,
         selected and {1,1,1,1} or {0.06,0.06,0.06,1})
     end
   end
