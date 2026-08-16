@@ -3,7 +3,7 @@ name: Publish Gen 3 UI 2.0.0
 on:
   push:
     paths:
-      - '.release_payload2/READY'
+      - '.release_payload_final/READY'
 
 permissions:
   contents: write
@@ -21,7 +21,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cat .release_payload2/chunk-* > /tmp/gen3_battle_ui-2.0.0.b64
+          cat .release_payload_final/part-* > /tmp/gen3_battle_ui-2.0.0.b64
           base64 --decode /tmp/gen3_battle_ui-2.0.0.b64 > /tmp/gen3_battle_ui-2.0.0.zip
           unzip -t /tmp/gen3_battle_ui-2.0.0.zip
           rm -rf /tmp/gen3-ui-release
@@ -41,11 +41,12 @@ jobs:
           cp /tmp/gen3-ui-release/gen3_battle_ui/README.md ./README.md
           cp /tmp/gen3-ui-release/gen3_battle_ui/CHANGELOG.md ./CHANGELOG.md
 
-          # Repository Download ZIP must itself be a live, launcher-ready mod.
+          # GitHub's own Download ZIP must contain the live mod at repository
+          # root: main.lua + manifest.json, not another release archive.
           find . -maxdepth 1 -type f -name '*.zip' -delete
 
-          # Remove one-shot transfer scaffolding before the release commit.
-          rm -rf .release_payload .release_payload2
+          # Remove every one-shot transfer artifact before the public commit.
+          rm -rf .release_payload .release_payload2 .release_payload_final
           rm -f .github/workflows/release-2.0.0.yml
           rmdir .github/workflows 2>/dev/null || true
           rmdir .github 2>/dev/null || true
