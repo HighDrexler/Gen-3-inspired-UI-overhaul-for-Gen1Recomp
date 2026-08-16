@@ -2,14 +2,34 @@
   "id": "gen3_battle_ui",
   "name": "Gen 3 Inspired UI Overhaul",
   "version": "2.0.0",
-  "description": "A presentation-focused Gen 3-inspired UI overhaul for Gen1Recomp with cross-generation support, configurable UI styling, modernized battle and menu presentation, and broad compatibility with existing sprite and gameplay mods.",
   "author": "HighDrexler",
+  "description": "Full Gen 3-inspired UI overhaul for Gen1Recomp with unified Gen I/Gen II presentation, customizable typography and colors, modern battle/party/PC/Pokedex/bag/save/dialogue flows, and compatibility-first sprite rendering. Presentation-only; native gameplay behavior is preserved.",
+  "profile": "overhaul",
   "entry": "main.lua",
-  "enabled": true,
-  "options": {},
-  "targets": ["red", "blue", "yellow", "gold", "silver", "crystal"],
-  "tags": ["ui", "gen3", "battle", "menus", "gen1", "gen2"],
-  "repository": "HighDrexler/Gen-3-inspired-UI-overhaul-for-Gen1Recomp",
-  "homepage": "https://github.com/HighDrexler/Gen-3-inspired-UI-overhaul-for-Gen1Recomp",
-  "release": "v2.0.0"
+  "github": "HighDrexler/Gen-3-inspired-UI-overhaul-for-Gen1Recomp",
+  "category": "UI",
+  "priority": 100,
+  "dependencies": [],
+  "optional_dependencies": [
+    "BATTLE_ART_VOXEL_FORK",
+    "DRAMALESS_SHAPE",
+    "DRAMATIC_SHAPE",
+    "STADIUM_BATTLE_FX",
+    "BATTLE_CINEMATICS",
+    "potato_voxel"
+  ],
+  "conflicts": [
+    "colosseum_ui_overhaul"
+  ],
+  "incompatible": [],
+  "experimental": false,
+  "affects_link": false,
+  "permissions": [
+    "engine_internals"
+  ],
+  "api": 2,
+  "games": [
+    "gen1",
+    "gen2"
+  ]
 }
