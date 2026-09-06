@@ -1,0 +1,54 @@
+name: Replace dev branch with Gen 3 UI 3.0.0
+
+on:
+  push:
+    branches:
+      - scratch-mobile-import-investigation
+    paths:
+      - '.v3deploy/trigger'
+
+permissions:
+  contents: write
+
+jobs:
+  replace:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: scratch-mobile-import-investigation
+
+      - name: Rebuild exact 3.0.0 payload
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .v3deploy/chunk* > /tmp/v3.b64
+          base64 --decode /tmp/v3.b64 > /tmp/v3.tar.xz
+          echo "fec45b236c5de176681ef8b80d8f847d4822ded17be66d23f39233fbb03d1601  /tmp/v3.tar.xz" | sha256sum -c -
+          rm -rf /tmp/v3root
+          mkdir -p /tmp/v3root
+          tar -xJf /tmp/v3.tar.xz -C /tmp/v3root
+          test -f /tmp/v3root/main.lua
+          test -f /tmp/v3root/manifest.json
+          grep -q '"version": "3.0.0"' /tmp/v3root/manifest.json
+
+      - name: Replace branch root in entirety
+        shell: bash
+        run: |
+          set -euo pipefail
+          git rm -rf .
+          git clean -fdx
+          cp -a /tmp/v3root/. .
+          test "$(find . -mindepth 1 -maxdepth 1 ! -name .git | wc -l)" -eq 6
+          test -f ARCHITECTURE.md
+          test -f CHANGELOG.md
+          test -f README.md
+          test -f VALIDATION_3.0.0.md
+          test -f main.lua
+          test -f manifest.json
+          git config user.name 'HighDrexler Branch Replacement Bot'
+          git config user.email 'actions@users.noreply.github.com'
+          git add -A
+          git commit -m 'Replace development branch with Gen 3 UI 3.0.0'
+          git push origin HEAD:scratch-mobile-import-investigation
