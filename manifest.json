@@ -1,7 +1,7 @@
 {
   "id": "gen3_battle_ui",
   "name": "Gen 3 Inspired UI Overhaul",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "author": "HighDrexler",
   "description": "Full Gen 3-inspired UI overhaul for Gen1Recomp with unified Gen I/Gen II presentation, customizable typography and colors, modern battle/party/PC/Pokedex/bag/save/dialogue flows, and compatibility-first sprite rendering. Presentation-only; native gameplay behavior is preserved.",
   "profile": "overhaul",
@@ -11,6 +11,7 @@
   "priority": 100,
   "dependencies": [],
   "optional_dependencies": [
+    "BATTLE_ART_VOXEL_GEN2",
     "BATTLE_ART_VOXEL_FORK",
     "DRAMALESS_SHAPE",
     "DRAMATIC_SHAPE",
